@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  TRUONG_BO_PHAN
+  KE_TOAN
+  LANH_DAO
+  NCC
+  ADMIN
+}
+
+enum TicketKind {
+  tam_ung
+  hoan_ung
+  thanh_toan
+}
+
+enum TicketStatus {
+  draft
+  cho_truong_bp
+  cho_ke_toan
+  cho_lanh_dao
+  cho_chi
+  da_chi
+  da_hoan_ung
+  da_quyet_toan
+  da_thanh_toan
+  tu_choi
+  tra_lai
+}
+
+model Department {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  users   User[]
+  tickets Ticket[]
+}
+
+model User {
+  id           String      @id @default(cuid())
+  username     String      @unique
+  passwordHash String
+  name         String
+  email        String?
+  role         Role
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  vendorId     String?
+  vendor       Vendor?     @relation(fields: [vendorId], references: [id])
+
+  ticketsCreated Ticket[]        @relation("CreatedBy")
+  approvals      Approval[]
+  attachments    Attachment[]
+  timelineEvents TimelineEvent[]
+  paymentsMade   Ticket[]        @relation("PaidBy")
+}
+
+model Vendor {
+  id      String   @id @default(cuid())
+  name    String
+  taxCode String?
+  address String?
+  users   User[]
+  tickets Ticket[]
+}
+
+model Ticket {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  kind           TicketKind
+  status         TicketStatus @default(draft)
+  title          String
+  content        String
+  amount         Float
+  purpose        String?
+  neededOn       DateTime?
+  settleDueOn    DateTime?
+  receiveMethod  String?
+  bankAccount    String?
+  contractNumber String?
+  contractValue  Float?
+  installment    Int?
+  paidAt         DateTime?
+  paymentRef     String?
+  paidNote       String?
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+  createdById  String
+  createdBy    User        @relation("CreatedBy", fields: [createdById], references: [id])
+  vendorId     String?
+  vendor       Vendor?     @relation(fields: [vendorId], references: [id])
+  paidById     String?
+  paidBy       User?       @relation("PaidBy", fields: [paidById], references: [id])
+
+  advanceId   String?
+  advance     Ticket?  @relation("AdvanceSettlement", fields: [advanceId], references: [id])
+  settlements Ticket[] @relation("AdvanceSettlement")
+
+  lines       ExpenseLine[]
+  attachments Attachment[]
+  approvals   Approval[]
+  timeline    TimelineEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([kind])
+  @@index([createdById])
+  @@index([departmentId])
+  @@index([vendorId])
+  @@index([contractNumber])
+}
+
+model ExpenseLine {
+  id          String    @id @default(cuid())
+  ticketId    String
+  ticket      Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  content     String
+  spentOn     DateTime?
+  amount      Float
+  invoiceNote String?
+}
+
+model Approval {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  stage     String
+  decision  String
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Attachment {
+  id           String   @id @default(cuid())
+  ticketId     String
+  ticket       Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  fileName     String
+  filePath     String
+  kind         String
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model TimelineEvent {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  message   String
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hướng dẫn sử dụng — Tạm ứng, hoàn ứng, thanh toán</title>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      themeVariables: {
+        primaryColor: "#e6efe9",
+        primaryTextColor: "#2b2520",
+        primaryBorderColor: "#1f4d3a",
+        lineColor: "#b08a3e",
+        secondaryColor: "#f6edd8",
+        tertiaryColor: "#f7f3ec",
+        noteBkgColor: "#f6edd8",
+        noteTextColor: "#2b2520",
+        actorBkg: "#e6efe9",
+        actorTextColor: "#2b2520",
+        actorBorder: "#1f4d3a",
+        actorLineColor: "#7a6f63",
+        signalTextColor: "#2b2520",
+        labelTextColor: "#2b2520",
+      },
+      sequence: { actorMargin: 56, messageMargin: 36, width: 180 },
+    });
+  </script>
+  <style>
+    :root {
+      --forest: #1f4d3a;
+      --gold: #b08a3e;
+      --bg: #f7f3ec;
+      --text: #2b2520;
+      --muted: #7a6f63;
+      --card: #fffdf9;
+      --line: #e7dfd2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Be Vietnam Pro, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    header {
+      background: var(--forest);
+      color: #f7f3ec;
+      padding: 2rem 1.5rem 1.5rem;
+    }
+    header .wrap, main, footer .wrap { max-width: 960px; margin: 0 auto; }
+    header p { color: #e6efe9; margin: 0.5rem 0 0; }
+    header a { color: #f6edd8; }
+    main { padding: 1.5rem; }
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    nav.toc h2 { margin: 0 0 0.5rem; font-size: 1rem; }
+    nav.toc ol { margin: 0; padding-left: 1.25rem; }
+    nav.toc a { color: var(--forest); text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    h2 { color: var(--forest); margin-top: 0; }
+    h3 { color: var(--text); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td { border: 1px solid var(--line); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
+    th { background: #efe8dc; }
+    code { background: #e6efe9; color: var(--forest); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.88em; }
+    figure { margin: 1rem 0; }
+    figure img { width: 100%; border: 1px solid var(--line); border-radius: 12px; }
+    figcaption { color: var(--muted); font-size: 0.85rem; margin-top: 0.35rem; }
+    .mermaid {
+      background: #fffdf9;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    ol, ul { padding-left: 1.25rem; }
+    footer { padding: 1rem 1.5rem 2rem; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Hướng dẫn sử dụng</h1>
+      <p>Tạm ứng, hoàn ứng nội bộ và thanh toán cho nhà thầu. Không gồm mua sắm thiết bị.</p>
+      <p>
+        Online: <a href="https://he-thong-thanh-toan.vercel.app">https://he-thong-thanh-toan.vercel.app</a>
+        · Local: <a href="http://localhost:3000">http://localhost:3000</a>
+        · Mật khẩu demo: <code>demo123</code>
+      </p>
+    </div>
+  </header>
+  <main>
+    <nav class="toc">
+      <h2>Mục lục</h2>
+      <ol>
+        <li><a href="#giao-dien">Giao diện</a></li>
+        <li><a href="#dang-nhap">Đăng nhập</a></li>
+        <li><a href="#thao-tac">Thao tác theo vai trò</a></li>
+        <li><a href="#tam-ung">Đề nghị tạm ứng</a></li>
+        <li><a href="#hoan-ung">Đề nghị hoàn ứng</a></li>
+        <li><a href="#thanh-toan">Đề nghị thanh toán</a></li>
+        <li><a href="#ai-thay">Ai thấy phiếu nào</a></li>
+        <li><a href="#trang-thai">Trạng thái</a></li>
+      </ol>
+    </nav>
+
+    <section id="giao-dien">
+      <h2>Giao diện</h2>
+      <p>Menu trái tên <strong>Sổ quỹ</strong>, nền kem. Mục đang mở có nền xanh nhạt và vạch vàng đồng bên trái. Tiêu đề và số tiền dùng chữ serif.</p>
+      <ul>
+        <li><strong>Hộp việc</strong> — phiếu đang chờ bạn, kèm ba số: đang chờ, tổng tiền đang chờ, quá hạn.</li>
+        <li><strong>Danh sách phiếu</strong> — mọi phiếu bạn được xem.</li>
+        <li><strong>Tạm ứng</strong> và <strong>Hoàn ứng</strong> — form tạo phiếu nội bộ. Chỉ nhân viên và quản trị thấy.</li>
+        <li><strong>Cổng nhà thầu</strong> — form thanh toán. Chỉ nhà thầu và quản trị thấy.</li>
+        <li><strong>Quản trị</strong> — danh sách người dùng. Chỉ quản trị thấy.</li>
+      </ul>
+      <p>Trên chi tiết phiếu, thanh tiến trình đọc từ trái sang phải. Bước đã qua tô xanh đậm, bước hiện tại tô xanh lá, bước chưa tới để nhạt. Hoàn ứng chi không vượt sẽ gạch ngang bước lãnh đạo và ghi “Bỏ qua lãnh đạo”. Badge trạng thái có chấm màu: tạm ứng xanh lá, hoàn ứng vàng đồng, thanh toán nâu.</p>
+      <figure>
+        <img src="docs/screens/login.png" alt="Trang đăng nhập với các chip tài khoản demo" />
+        <figcaption>Đăng nhập. Bấm chip để điền tên đăng nhập, mật khẩu demo123.</figcaption>
+      </figure>
+      <figure>
+        <img src="docs/screens/user-inbox.png" alt="Hộp việc của nhân viên" />
+        <figcaption>Hộp việc nhân viên: số đang chờ, tổng tiền, cảnh báo quá hạn.</figcaption>
+      </figure>
+      <figure>
+        <img src="docs/screens/user-detail.png" alt="Chi tiết phiếu tạm ứng với thanh tiến trình" />
+        <figcaption>Chi tiết phiếu: mã vàng đồng, số tiền lớn, thanh tiến trình và badge.</figcaption>
+      </figure>
+    </section>
+
+    <section id="dang-nhap">
+      <h2>Đăng nhập</h2>
+      <table>
+        <thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Việc trên dữ liệu demo</th></tr></thead>
+        <tbody>
+          <tr><td><code>user</code></td><td>Nhân viên</td><td>Tạo tạm ứng, hoàn ứng. Có phiếu quá hạn TU-2026-0002</td></tr>
+          <tr><td><code>truong_kd</code></td><td>Trưởng Kinh doanh</td><td>Duyệt TU-2026-0001</td></tr>
+          <tr><td><code>truong_kt</code></td><td>Trưởng Kỹ thuật</td><td>Xác nhận khối lượng TT-2026-0002</td></tr>
+          <tr><td><code>ke_toan</code></td><td>Kế toán</td><td>Kiểm tra HU-2026-0001, chi TU-2026-0005</td></tr>
+          <tr><td><code>lanh_dao</code></td><td>Ban lãnh đạo</td><td>Duyệt TU-2026-0004</td></tr>
+          <tr><td><code>nha_thau</code></td><td>Nhà thầu</td><td>Gửi đề nghị thanh toán</td></tr>
+          <tr><td><code>admin</code></td><td>Quản trị</td><td>Xem mọi phiếu và thao tác thay vai trò</td></tr>
+        </tbody>
+      </table>
+      <p>Mọi phiếu đi đủ bốn bước: trưởng bộ phận, kế toán, lãnh đạo, kế toán chi. Không có ngưỡng tiền để bỏ qua lãnh đạo. Tạm ứng mới vẫn tạo được khi còn khoản chưa hoàn; quá hạn chỉ hiện cảnh báo.</p>
+    </section>
+
+    <section id="thao-tac">
+      <h2>Thao tác theo vai trò</h2>
+      <h3>Nhân viên</h3>
+      <ol>
+        <li>Đăng nhập <code>user</code>. Hộp việc hiện phiếu quá hạn nếu có.</li>
+        <li>Bấm <strong>Tạm ứng</strong>. Chọn mục đích, nhập tiêu đề, nội dung, số tiền, ngày cần tiền, hạn hoàn ứng. Chuyển khoản thì nhập số tài khoản. Bấm <strong>Gửi duyệt</strong> hoặc <strong>Lưu nháp</strong>.</li>
+        <li>Bấm <strong>Hoàn ứng</strong>. Chọn một phiếu tạm ứng đã chi, thêm từng dòng chi. Form hiện tổng chi và phần chênh. Bấm <strong>Gửi duyệt</strong>.</li>
+      </ol>
+      <figure>
+        <img src="docs/screens/user-form.png" alt="Form tạo đề nghị tạm ứng" />
+        <figcaption>Form tạm ứng, có cảnh báo khoản quá hạn nhưng vẫn gửi được phiếu mới.</figcaption>
+      </figure>
+      <h3>Trưởng bộ phận</h3>
+      <ol>
+        <li>Đăng nhập <code>truong_kd</code> hoặc <code>truong_kt</code>. Hộp việc chỉ có phiếu của bộ phận mình.</li>
+        <li>Mở phiếu. Với tạm ứng hoặc hoàn ứng bấm <strong>Đồng ý</strong>, <strong>Trả lại để sửa</strong>, hoặc <strong>Từ chối</strong>. Với thanh toán nhà thầu, nút đồng ý là <strong>Xác nhận khối lượng</strong>.</li>
+        <li>Trả lại hoặc từ chối thì phải nhập ý kiến.</li>
+      </ol>
+      <figure>
+        <img src="docs/screens/truong-inbox.png" alt="Hộp việc trưởng bộ phận" />
+        <figcaption>Trưởng Kinh doanh thấy TU-2026-0001, không thấy phiếu bộ phận khác.</figcaption>
+      </figure>
+      <h3>Kế toán</h3>
+      <ol>
+        <li>Đăng nhập <code>ke_toan</code>. Hộp việc gồm phiếu chờ kiểm tra và phiếu chờ chi.</li>
+        <li>Với hoàn ứng: nếu chi vượt, bấm <strong>Đồng ý</strong> để chuyển lãnh đạo. Nếu chi ít hơn, bấm <strong>Chuyển thu tiền thừa</strong>. Nếu bằng, bấm <strong>Quyết toán</strong>.</li>
+        <li>Với phiếu chờ chi: nhập ngày, số chứng từ hoặc số ủy nhiệm chi, rồi bấm <strong>Xác nhận</strong>.</li>
+      </ol>
+      <figure>
+        <img src="docs/screens/ketoan-detail.png" alt="Kế toán duyệt phiếu hoàn ứng" />
+        <figcaption>Khu Việc của bạn nằm ngay dưới thanh tiến trình.</figcaption>
+      </figure>
+      <h3>Lãnh đạo</h3>
+      <p>Đăng nhập <code>lanh_dao</code>, mở phiếu chờ duyệt, bấm <strong>Đồng ý</strong> hoặc từ chối kèm lý do. Mọi số tiền đều qua bước này, trừ hoàn ứng không chi vượt.</p>
+      <h3>Nhà thầu</h3>
+      <ol>
+        <li>Đăng nhập <code>nha_thau</code>. Menu chỉ có Hộp việc và Cổng nhà thầu. Không có Tạm ứng.</li>
+        <li>Nhập nội dung, số hợp đồng, giá trị hợp đồng, đợt, số tiền, bộ phận phụ trách. Đính kèm công văn, biên bản nghiệm thu, bảng giá trị, hóa đơn VAT.</li>
+        <li>Bấm <strong>Gửi đề nghị</strong>. Nếu lũy kế vượt giá trị hợp đồng, hệ thống không nhận.</li>
+      </ol>
+      <figure>
+        <img src="docs/screens/nha-thau.png" alt="Cổng nhà thầu" />
+        <figcaption>Cổng nhà thầu: form thanh toán theo đợt.</figcaption>
+      </figure>
+      <h3>Quản trị</h3>
+      <p>Đăng nhập <code>admin</code>. Thấy mọi menu và mọi phiếu. Khi một phiếu đang chờ vai trò nào, quản trị bấm được nút của vai trò đó.</p>
+    </section>
+
+    <section id="tam-ung">
+      <h2>Đề nghị tạm ứng</h2>
+      <p>Nhân viên nhập mục đích (công tác, tiếp khách, sự kiện, khác), nội dung, số tiền, ngày cần tiền, hạn hoàn ứng, tiền mặt hoặc chuyển khoản. Có thể đính kèm kế hoạch và dự trù.</p>
+      <pre class="mermaid">
+sequenceDiagram
+  participant NV as Nhân viên
+  participant HT as Hệ thống
+  participant TBP as Trưởng bộ phận
+  participant KT as Kế toán
+  participant LD as Ban lãnh đạo
+  NV->>HT: Tạo đề nghị tạm ứng
+  HT->>TBP: Chờ trưởng bộ phận duyệt
+  TBP->>HT: Duyệt
+  HT->>KT: Chờ kế toán kiểm tra
+  KT->>HT: Đồng ý
+  HT->>LD: Chờ lãnh đạo duyệt
+  LD->>HT: Duyệt
+  HT->>KT: Chờ chi tiền
+  KT->>HT: Đã chi, ghi chứng từ
+  HT-->>NV: Đã nhận tiền, chờ hoàn ứng trước hạn
+      </pre>
+      <p>Từ chối thì phiếu thành Từ chối, kèm lý do. Trả lại thì về Nháp để sửa và gửi lại.</p>
+    </section>
+
+    <section id="hoan-ung">
+      <h2>Đề nghị hoàn ứng</h2>
+      <p>Chọn một phiếu tạm ứng đã chi của chính mình, kê từng khoản chi. Hệ thống tính chênh lệch. Chi vượt thì lãnh đạo duyệt phần vượt. Chi ít hơn thì kế toán xác nhận đã thu tiền thừa. Chi bằng thì quyết toán luôn.</p>
+      <pre class="mermaid">
+sequenceDiagram
+  participant NV as Nhân viên
+  participant HT as Hệ thống
+  participant TBP as Trưởng bộ phận
+  participant KT as Kế toán
+  participant LD as Ban lãnh đạo
+  NV->>HT: Chọn phiếu tạm ứng, kê chi phí thực tế
+  HT->>TBP: Chờ trưởng bộ phận duyệt
+  TBP->>HT: Duyệt
+  HT->>KT: Chờ kiểm tra chứng từ
+  alt Chi vượt số đã ứng
+    KT->>HT: Chứng từ hợp lệ
+    HT->>LD: Chờ duyệt phần vượt
+    LD->>HT: Duyệt
+    KT->>HT: Chi thêm phần thiếu
+  else Chi ít hơn số đã ứng
+    NV->>KT: Nộp lại tiền thừa
+    KT->>HT: Xác nhận đã thu
+  end
+  HT-->>NV: Đã quyết toán, tạm ứng gốc đã hoàn
+      </pre>
+    </section>
+
+    <section id="thanh-toan">
+      <h2>Đề nghị thanh toán</h2>
+      <p>Nhà thầu nhập trên cổng nhà thầu: số hợp đồng, giá trị hợp đồng, đợt, số tiền, bộ phận phụ trách, và file hồ sơ. Một hợp đồng có nhiều đợt. Lũy kế không được vượt giá trị hợp đồng. Nhà thầu không tạo tạm ứng.</p>
+      <pre class="mermaid">
+sequenceDiagram
+  participant NT as Nhà thầu
+  participant HT as Hệ thống
+  participant TBP as Bộ phận phụ trách
+  participant KT as Kế toán
+  participant LD as Ban lãnh đạo
+  NT->>HT: Gửi đề nghị thanh toán kèm hồ sơ
+  HT->>TBP: Chờ xác nhận khối lượng
+  alt Hồ sơ thiếu hoặc sai
+    TBP->>HT: Trả lại
+    HT-->>NT: Bổ sung hồ sơ và gửi lại
+  else Hồ sơ đủ
+    TBP->>HT: Xác nhận khối lượng
+    HT->>KT: Chờ kiểm tra hóa đơn và lũy kế
+    KT->>HT: Đồng ý
+    HT->>LD: Chờ lãnh đạo duyệt
+    LD->>HT: Duyệt
+    KT->>HT: Chi tiền, ghi số ủy nhiệm chi
+    HT-->>NT: Đã thanh toán
+  end
+      </pre>
+    </section>
+
+    <section id="ai-thay">
+      <h2>Ai thấy phiếu nào</h2>
+      <ul>
+        <li>Nhân viên: chỉ phiếu của mình.</li>
+        <li>Trưởng bộ phận: phiếu của bộ phận mình và phiếu nhà thầu giao bộ phận đó theo dõi.</li>
+        <li>Nhà thầu: chỉ đề nghị thanh toán của mình.</li>
+        <li>Kế toán, ban lãnh đạo, quản trị: mọi phiếu.</li>
+      </ul>
+    </section>
+
+    <section id="trang-thai">
+      <h2>Trạng thái</h2>
+      <table>
+        <thead><tr><th>Trạng thái</th><th>Ý nghĩa</th></tr></thead>
+        <tbody>
+          <tr><td>Nháp</td><td>Người tạo đang sửa</td></tr>
+          <tr><td>Chờ trưởng bộ phận</td><td>Duyệt nội bộ hoặc xác nhận khối lượng</td></tr>
+          <tr><td>Chờ kế toán</td><td>Kiểm tra chứng từ và lũy kế</td></tr>
+          <tr><td>Chờ lãnh đạo duyệt</td><td>Duyệt cuối. Hoàn ứng chỉ khi chi vượt</td></tr>
+          <tr><td>Chờ chi / thu tiền</td><td>Kế toán chi hoặc thu phần chênh</td></tr>
+          <tr><td>Đã chi, chờ hoàn ứng</td><td>Tạm ứng đã nhận tiền</td></tr>
+          <tr><td>Đã hoàn ứng / Đã quyết toán</td><td>Hoàn ứng xong</td></tr>
+          <tr><td>Đã thanh toán</td><td>Nhà thầu đã nhận tiền</td></tr>
+          <tr><td>Từ chối</td><td>Dừng, có lý do</td></tr>
+          <tr><td>Trả lại</td><td>Nhà thầu bổ sung hồ sơ. Phiếu nội bộ trả về thì về Nháp</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <footer>
+    <div class="wrap">Sơ đồ cần mạng để tải Mermaid. Bản chữ: USERGUIDE.md.</div>
+  </footer>
+</body>
+</html>

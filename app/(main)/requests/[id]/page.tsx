@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Role, TicketKind, TicketStatus } from "@prisma/client";
+import { Role, TicketKind, TicketStatus } from "@/lib/enums";
 import { prisma } from "@/lib/prisma";
 import { decideAction, payAction } from "@/app/actions/tickets";
 import { AdvanceForm } from "@/components/advance-form";

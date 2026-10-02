@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/enums";
 import { prisma } from "@/lib/prisma";
 import { formatVnd, inboxWhere, overdueWhere, requireDbUser } from "@/lib/helpers";
 import { PageHeader } from "@/components/page-header";

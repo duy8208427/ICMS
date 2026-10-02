@@ -1,4 +1,5 @@
-import { Department, Role, Vendor } from "@prisma/client";
+import { Department, Vendor } from "@prisma/client";
+import { Role } from "@/lib/enums";
 import { savePaymentAction } from "@/app/actions/tickets";
 import { FilePicker } from "@/components/file-picker";
 import { btnGhost, btnPrimary, cardClass, fieldClass, labelClass } from "@/components/ui";
@@ -24,7 +25,7 @@ export function PaymentForm({
   ticket?: Defaults;
   departments: Department[];
   vendors: Vendor[];
-  role: Role;
+  role: string;
 }) {
   return (
     <form action={savePaymentAction} className={`${cardClass} space-y-5 p-6`}>

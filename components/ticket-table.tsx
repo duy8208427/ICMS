@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { TicketKind, TicketStatus } from "@prisma/client";
 import { KIND_DOT, KIND_LABEL, formatVnd } from "@/lib/helpers";
 import { StatusBadge } from "@/components/status-badge";
 import { cardClass } from "@/components/ui";
@@ -11,9 +10,9 @@ export function TicketTable({
     id: string;
     code: string;
     title: string;
-    kind: TicketKind;
+    kind: string;
     amount: number;
-    status: TicketStatus;
+    status: string;
     createdBy?: { name: string } | null;
     department?: { name: string } | null;
   }[];

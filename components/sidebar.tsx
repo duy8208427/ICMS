@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/enums";
 import { Suspense } from "react";
 import { logoutAction } from "@/app/actions/auth";
 import { NavLink } from "@/components/nav-link";

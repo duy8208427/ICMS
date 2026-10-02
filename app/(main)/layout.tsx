@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Sidebar } from "@/components/sidebar";
 
@@ -7,7 +7,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const account = await prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true } });
-  if (!account) await signOut({ redirectTo: "/login" });
+  if (!account) redirect("/api/clear-session");
   return (
     <div className="flex min-h-screen bg-cream">
       <Sidebar user={session.user} />

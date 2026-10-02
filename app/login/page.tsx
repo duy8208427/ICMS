@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { LoginForm } from "./login-form";
 
@@ -17,7 +17,7 @@ export default async function LoginPage() {
   if (session?.user?.id) {
     const account = await prisma.user.findUnique({ where: { id: session.user.id }, select: { id: true } });
     if (account) redirect("/dashboard");
-    await signOut({ redirectTo: "/login" });
+    redirect("/api/clear-session");
   }
   return (
     <div className="flex min-h-screen bg-cream">

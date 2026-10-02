@@ -1,4 +1,4 @@
-import { Role, TicketKind, TicketStatus } from "@prisma/client";
+import { Role, TicketKind, TicketStatus } from "@/lib/enums";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { canAct, requireDbUser } from "@/lib/helpers";

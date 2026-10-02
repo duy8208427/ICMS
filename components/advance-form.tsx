@@ -1,4 +1,5 @@
-import { Department, Role } from "@prisma/client";
+import { Department } from "@prisma/client";
+import { Role } from "@/lib/enums";
 import { saveAdvanceAction } from "@/app/actions/tickets";
 import { FilePicker } from "@/components/file-picker";
 import { btnGhost, btnPrimary, cardClass, fieldClass, labelClass } from "@/components/ui";
@@ -25,7 +26,7 @@ export function AdvanceForm({
 }: {
   ticket?: Defaults;
   departments: Department[];
-  role: Role;
+  role: string;
   openAdvances: { code: string; title: string; settleDueOn: Date | null; overdue: boolean }[];
 }) {
   const overdue = openAdvances.filter((item) => item.overdue);

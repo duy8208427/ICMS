@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { Role, TicketKind, TicketStatus } from "@prisma/client";
+import { Role, TicketKind, TicketStatus } from "@/lib/enums";
 import { prisma } from "@/lib/prisma";
 import { saveUpload } from "@/lib/uploads";
 import {

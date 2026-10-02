@@ -1,5 +1,6 @@
-import { Prisma, Role, Ticket, TicketKind, TicketStatus } from "@prisma/client";
-import { auth, signOut } from "@/auth";
+import { Prisma, Ticket } from "@prisma/client";
+import { Role, TicketKind, TicketStatus } from "@/lib/enums";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
@@ -12,15 +13,15 @@ export async function requireUser() {
 export async function requireDbUser() {
   const sessionUser = await requireUser();
   const user = await prisma.user.findUnique({ where: { id: sessionUser.id } });
-  if (!user) await signOut({ redirectTo: "/login" });
+  if (!user) redirect("/api/clear-session");
   return user!;
 }
 
-export function canAct(role: Role, roles: Role[]) {
+export function canAct(role: string, roles: readonly string[]) {
   return role === Role.ADMIN || roles.includes(role);
 }
 
-export const ROLE_LABEL: Record<Role, string> = {
+export const ROLE_LABEL: Record<string, string> = {
   USER: "Nhân viên",
   TRUONG_BO_PHAN: "Trưởng bộ phận",
   KE_TOAN: "Kế toán",
@@ -29,22 +30,22 @@ export const ROLE_LABEL: Record<Role, string> = {
   ADMIN: "Quản trị",
 };
 
-export const KIND_LABEL: Record<TicketKind, string> = {
+export const KIND_LABEL: Record<string, string> = {
   tam_ung: "Đề nghị tạm ứng",
   hoan_ung: "Đề nghị hoàn ứng",
   thanh_toan: "Đề nghị thanh toán",
 };
 
-export function statusLabel(kind: TicketKind, status: TicketStatus) {
+export function statusLabel(kind: string, status: string) {
   if (kind === TicketKind.thanh_toan && status === TicketStatus.cho_truong_bp) return "Chờ xác nhận khối lượng";
   if (kind === TicketKind.thanh_toan && status === TicketStatus.tra_lai) return "Trả lại nhà thầu";
   if (kind === TicketKind.thanh_toan && status === TicketStatus.cho_chi) return "Chờ chi tiền";
   if (kind === TicketKind.tam_ung && status === TicketStatus.cho_chi) return "Chờ chi tiền";
   if (kind === TicketKind.hoan_ung && status === TicketStatus.cho_chi) return "Chờ thu / chi chênh lệch";
-  return STATUS_LABEL[status];
+  return STATUS_LABEL[status] ?? status;
 }
 
-export const STATUS_LABEL: Record<TicketStatus, string> = {
+export const STATUS_LABEL: Record<string, string> = {
   draft: "Nháp",
   cho_truong_bp: "Chờ trưởng bộ phận",
   cho_ke_toan: "Chờ kế toán",
@@ -58,7 +59,7 @@ export const STATUS_LABEL: Record<TicketStatus, string> = {
   tra_lai: "Trả lại",
 };
 
-export const STATUS_TONE: Record<TicketStatus, string> = {
+export const STATUS_TONE: Record<string, string> = {
   draft: "bg-cream-deep text-muted",
   cho_truong_bp: "bg-gold-soft text-[#7a5b1e]",
   cho_ke_toan: "bg-[#e7eef2] text-[#35515c]",
@@ -72,7 +73,7 @@ export const STATUS_TONE: Record<TicketStatus, string> = {
   tra_lai: "bg-cream-deep text-ink",
 };
 
-export const KIND_DOT: Record<TicketKind, string> = {
+export const KIND_DOT: Record<string, string> = {
   tam_ung: "bg-forest",
   hoan_ung: "bg-gold",
   thanh_toan: "bg-[#8c5a3c]",
@@ -90,7 +91,7 @@ export const RECEIVE_LABEL: Record<string, string> = {
   chuyen_khoan: "Chuyển khoản",
 };
 
-const CODE_PREFIX: Record<TicketKind, string> = {
+const CODE_PREFIX: Record<string, string> = {
   tam_ung: "TU",
   hoan_ung: "HU",
   thanh_toan: "TT",
@@ -143,7 +144,7 @@ export function settlementDiff(spent: number, advanced: number) {
 
 type Actor = {
   id: string;
-  role: Role;
+  role: string;
   departmentId?: string | null;
   vendorId?: string | null;
 };
@@ -163,6 +164,8 @@ export function visibleTicketWhere(user: Actor): Prisma.TicketWhereInput {
         vendorId: user.vendorId ?? "__none__",
         kind: TicketKind.thanh_toan,
       };
+    default:
+      return {};
   }
 }
 
@@ -198,6 +201,8 @@ export function inboxWhere(user: Actor): Prisma.TicketWhereInput {
           ],
         },
       };
+    default:
+      return {};
   }
 }
 
@@ -227,10 +232,12 @@ export function canSeeTicket(user: Actor, ticket: Ticket) {
       return ticket.departmentId === user.departmentId;
     case Role.NCC:
       return ticket.kind === TicketKind.thanh_toan && ticket.vendorId === user.vendorId;
+    default:
+      return false;
   }
 }
 
-export function statusHint(ticket: { kind: TicketKind; status: TicketStatus }) {
+export function statusHint(ticket: { kind: string; status: string }) {
   if (ticket.status === TicketStatus.draft) return "Người tạo gửi phiếu để trưởng bộ phận duyệt.";
   if (ticket.status === TicketStatus.tra_lai) {
     return ticket.kind === TicketKind.thanh_toan
@@ -259,9 +266,9 @@ export function statusHint(ticket: { kind: TicketKind; status: TicketStatus }) {
   return "Phiếu đã từ chối.";
 }
 
-export async function nextTicketCode(kind: TicketKind) {
+export async function nextTicketCode(kind: string) {
   const year = new Date().getFullYear();
-  const prefix = `${CODE_PREFIX[kind]}-${year}-`;
+  const prefix = `${CODE_PREFIX[kind] ?? "PH"}-${year}-`;
   const count = await prisma.ticket.count({
     where: { code: { startsWith: prefix } },
   });
@@ -281,7 +288,7 @@ export const ticketInclude = {
   settlements: { orderBy: { createdAt: "desc" as const } },
 } satisfies Prisma.TicketInclude;
 
-export function committedPaymentStatuses(): TicketStatus[] {
+export function committedPaymentStatuses(): string[] {
   return [
     TicketStatus.cho_truong_bp,
     TicketStatus.cho_ke_toan,

@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "@/lib/enums";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireDbUser, visibleTicketWhere } from "@/lib/helpers";

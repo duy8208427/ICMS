@@ -1,6 +1,6 @@
-import { TicketKind, TicketStatus } from "@prisma/client";
+import { TicketStatus } from "@/lib/enums";
 
-const STEPS: Record<TicketKind, string[]> = {
+const STEPS: Record<string, string[]> = {
   tam_ung: ["Gửi", "Trưởng BP", "Kế toán", "Lãnh đạo", "Chi tiền"],
   hoan_ung: ["Gửi", "Trưởng BP", "Kế toán", "Lãnh đạo", "Quyết toán"],
   thanh_toan: ["Gửi", "Xác nhận KL", "Kế toán", "Lãnh đạo", "Chi tiền"],
@@ -11,11 +11,11 @@ export function ProgressTrack({
   status,
   skippedLeader,
 }: {
-  kind: TicketKind;
-  status: TicketStatus;
+  kind: string;
+  status: string;
   skippedLeader?: boolean;
 }) {
-  const steps = STEPS[kind];
+  const steps = STEPS[kind] ?? STEPS.tam_ung;
   const current = stepIndex(status);
   const rejected = status === TicketStatus.tu_choi;
 
@@ -56,7 +56,7 @@ export function ProgressTrack({
   );
 }
 
-function stepIndex(status: TicketStatus) {
+function stepIndex(status: string) {
   if (status === TicketStatus.draft || status === TicketStatus.tra_lai) return 0;
   if (status === TicketStatus.cho_truong_bp) return 1;
   if (status === TicketStatus.cho_ke_toan) return 2;

@@ -6,10 +6,9 @@ type Props = {
   name: string;
   multiple?: boolean;
   existingName?: string | null;
-  onChange?: (fileName: string | null) => void;
 };
 
-export function FilePicker({ name, multiple, existingName, onChange }: Props) {
+export function FilePicker({ name, multiple, existingName }: Props) {
   const id = useId();
   const [fileName, setFileName] = useState<string | null>(existingName || null);
 
@@ -25,7 +24,6 @@ export function FilePicker({ name, multiple, existingName, onChange }: Props) {
           const files = Array.from(e.target.files ?? []);
           const next = files.length ? files.map((file) => file.name).join(", ") : null;
           setFileName(next);
-          onChange?.(next);
         }}
       />
       <label

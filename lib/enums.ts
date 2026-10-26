@@ -8,6 +8,15 @@ export const Role = {
 } as const;
 export type Role = (typeof Role)[keyof typeof Role];
 
+export const ROLE_LABEL: Record<string, string> = {
+  USER: "Nhân viên",
+  TRUONG_BO_PHAN: "Trưởng bộ phận",
+  KE_TOAN: "Kế toán",
+  LANH_DAO: "Ban lãnh đạo",
+  NCC: "Nhà thầu",
+  ADMIN: "Quản trị",
+};
+
 export const TicketKind = {
   tam_ung: "tam_ung",
   hoan_ung: "hoan_ung",

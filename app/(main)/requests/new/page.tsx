@@ -61,7 +61,6 @@ export default async function NewTicketPage({
           needsDepartment={needsDepartment}
           openAdvances={openAdvances.map((ticket) => ({
             code: ticket.code,
-            title: ticket.title,
             settleDueOn: ticket.settleDueOn,
             overdue: Boolean(ticket.settleDueOn && ticket.settleDueOn < now),
           }))}

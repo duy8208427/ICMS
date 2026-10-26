@@ -346,7 +346,6 @@ export default async function TicketDetailPage({
           departments={departments}
           role={user.role}
           needsDepartment={user.role === Role.ADMIN || !user.departmentId}
-          openAdvances={[]}
         />
       ) : null}
       {editable && ticket.kind === TicketKind.hoan_ung ? (

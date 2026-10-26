@@ -73,7 +73,7 @@ export function NavGroup({
   );
 }
 
-export function isActive(href: string, pathname: string, kind: string | null, status: string | null) {
+function isActive(href: string, pathname: string, kind: string | null, status: string | null) {
   const [path, query] = href.split("?");
   const params = new URLSearchParams(query ?? "");
   const hrefKind = params.get("kind");

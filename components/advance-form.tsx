@@ -24,13 +24,13 @@ export function AdvanceForm({
   departments,
   role,
   needsDepartment,
-  openAdvances,
+  openAdvances = [],
 }: {
   ticket?: Defaults;
   departments: Department[];
   role: string;
   needsDepartment?: boolean;
-  openAdvances: { code: string; title: string; settleDueOn: Date | null; overdue: boolean }[];
+  openAdvances?: { code: string; settleDueOn: Date | null; overdue: boolean }[];
 }) {
   const overdue = openAdvances.filter((item) => item.overdue);
   return (

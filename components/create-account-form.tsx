@@ -3,16 +3,7 @@
 import { useState } from "react";
 import { createAccountAction } from "@/app/actions/admin";
 import { btnPrimary, cardClass, fieldClass, labelClass } from "@/components/ui";
-import { Role } from "@/lib/enums";
-
-const ROLE_LABEL: Record<string, string> = {
-  USER: "Nhân viên",
-  TRUONG_BO_PHAN: "Trưởng bộ phận",
-  KE_TOAN: "Kế toán",
-  LANH_DAO: "Ban lãnh đạo",
-  NCC: "Nhà thầu",
-  ADMIN: "Quản trị",
-};
+import { Role, ROLE_LABEL } from "@/lib/enums";
 
 export function CreateAccountForm({
   departments,

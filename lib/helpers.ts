@@ -4,7 +4,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 
-export async function requireUser() {
+export { ROLE_LABEL } from "@/lib/enums";
+
+async function requireUser() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   return session.user;
@@ -23,15 +25,6 @@ export function canAct(role: string, roles: readonly string[]) {
 
 export const INTERNAL_ROLES = [Role.USER, Role.TRUONG_BO_PHAN, Role.KE_TOAN, Role.LANH_DAO] as const;
 
-export const ROLE_LABEL: Record<string, string> = {
-  USER: "Nhân viên",
-  TRUONG_BO_PHAN: "Trưởng bộ phận",
-  KE_TOAN: "Kế toán",
-  LANH_DAO: "Ban lãnh đạo",
-  NCC: "Nhà thầu",
-  ADMIN: "Quản trị",
-};
-
 export const KIND_LABEL: Record<string, string> = {
   tam_ung: "Đề nghị tạm ứng",
   hoan_ung: "Đề nghị hoàn ứng",
@@ -47,7 +40,7 @@ export function statusLabel(kind: string, status: string) {
   return STATUS_LABEL[status] ?? status;
 }
 
-export const STATUS_LABEL: Record<string, string> = {
+const STATUS_LABEL: Record<string, string> = {
   draft: "Nháp",
   cho_truong_bp: "Chờ trưởng bộ phận",
   cho_ke_toan: "Chờ kế toán",
@@ -59,20 +52,6 @@ export const STATUS_LABEL: Record<string, string> = {
   da_thanh_toan: "Đã thanh toán",
   tu_choi: "Từ chối",
   tra_lai: "Trả lại",
-};
-
-export const STATUS_TONE: Record<string, string> = {
-  draft: "bg-cream-deep text-muted",
-  cho_truong_bp: "bg-gold-soft text-[#7a5b1e]",
-  cho_ke_toan: "bg-[#e7eef2] text-[#35515c]",
-  cho_lanh_dao: "bg-[#efe8f4] text-[#5c4570]",
-  cho_chi: "bg-forest-soft text-forest",
-  da_chi: "bg-[#e8eef8] text-[#31456a]",
-  da_hoan_ung: "bg-forest-soft text-forest",
-  da_quyet_toan: "bg-forest-soft text-forest",
-  da_thanh_toan: "bg-forest-soft text-forest",
-  tu_choi: "bg-[#f8e8e6] text-[#8a3b32]",
-  tra_lai: "bg-cream-deep text-ink",
 };
 
 export const KIND_DOT: Record<string, string> = {

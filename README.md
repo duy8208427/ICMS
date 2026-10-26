@@ -2,7 +2,9 @@
 
 Web app Next.js cho ba loại phiếu tiền: tạm ứng nội bộ, hoàn ứng nội bộ, thanh toán nhà thầu.
 
-Hướng dẫn: [USERGUIDE_HeThongThanhToan.html](USERGUIDE_HeThongThanhToan.html) · [USERGUIDE.md](USERGUIDE.md).
+PRD (theo dõi yêu cầu): [PRD_HeThongThanhToan.html](PRD_HeThongThanhToan.html).  
+Hướng dẫn: [USERGUIDE_HeThongThanhToan.html](USERGUIDE_HeThongThanhToan.html) · [USERGUIDE.md](USERGUIDE.md).  
+Go-live: [GO-LIVE_HeThongThanhToan.html](GO-LIVE_HeThongThanhToan.html).
 
 ## Chạy local
 

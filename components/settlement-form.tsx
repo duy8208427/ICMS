@@ -3,11 +3,23 @@
 import { useState } from "react";
 import { saveSettlementAction } from "@/app/actions/tickets";
 import { FilePicker } from "@/components/file-picker";
+import { MoneyInput } from "@/components/money-input";
 import { btnGhost, btnPrimary, cardClass, fieldClass, labelClass } from "@/components/ui";
 import { dayInput, formatVnd } from "@/lib/helpers";
 
 type AdvanceOption = { id: string; code: string; title: string; amount: number; settleDueOn: Date | null };
-type Line = { content: string; spentOn: string; amount: string; invoiceNote: string };
+type Line = {
+  key: string;
+  content: string;
+  spentOn: string;
+  amount: string;
+  fileName: string;
+  filePath: string;
+};
+
+function blankLine(key: string): Line {
+  return { key, content: "", spentOn: "", amount: "", fileName: "", filePath: "" };
+}
 
 export function SettlementForm({
   ticket,
@@ -18,21 +30,30 @@ export function SettlementForm({
     title: string;
     content: string;
     advanceId: string | null;
-    lines: { content: string; spentOn: Date | null; amount: number; invoiceNote: string | null }[];
+    lines: {
+      content: string;
+      spentOn: Date | null;
+      amount: number;
+      fileName: string | null;
+      filePath: string | null;
+    }[];
   };
   advances: AdvanceOption[];
 }) {
   const [advanceId, setAdvanceId] = useState(ticket?.advanceId ?? "");
   const [rows, setRows] = useState<Line[]>(
     ticket?.lines.length
-      ? ticket.lines.map((line) => ({
+      ? ticket.lines.map((line, index) => ({
+          key: `saved-${index}`,
           content: line.content,
           spentOn: dayInput(line.spentOn),
-          amount: String(line.amount),
-          invoiceNote: line.invoiceNote ?? "",
+          amount: line.amount ? String(line.amount) : "",
+          fileName: line.fileName ?? "",
+          filePath: line.filePath ?? "",
         }))
-      : [{ content: "", spentOn: "", amount: "", invoiceNote: "" }],
+      : [blankLine("line-0")],
   );
+  const [seq, setSeq] = useState(ticket?.lines.length ?? 1);
   const spent = rows.reduce((total, row) => total + (Number(row.amount) || 0), 0);
   const advanced = advances.find((item) => item.id === advanceId)?.amount ?? 0;
   const diff = advanceId ? spent - advanced : null;
@@ -42,14 +63,8 @@ export function SettlementForm({
       {ticket ? <input type="hidden" name="id" value={ticket.id} /> : null}
       <label className="block text-sm">
         <span className={labelClass}>Phiếu tạm ứng đã chi</span>
-        <select
-          name="advanceId"
-          required
-          value={advanceId}
-          onChange={(event) => setAdvanceId(event.target.value)}
-          className={fieldClass}
-        >
-          <option value="">Chọn phiếu của bạn</option>
+        <select name="advanceId" value={advanceId} onChange={(event) => setAdvanceId(event.target.value)} className={fieldClass}>
+          <option value="">Chọn phiếu của bạn — bắt buộc khi gửi duyệt</option>
           {advances.map((advance) => (
             <option key={advance.id} value={advance.id}>
               {advance.code} — {advance.title} — {formatVnd(advance.amount)}
@@ -59,7 +74,7 @@ export function SettlementForm({
       </label>
       <label className="block text-sm">
         <span className={labelClass}>Tiêu đề hoàn ứng</span>
-        <input name="title" required defaultValue={ticket?.title} className={fieldClass} />
+        <input name="title" defaultValue={ticket?.title} className={fieldClass} placeholder="Để trống khi lưu nháp sẽ thành Hoàn ứng nháp" />
       </label>
       <label className="block text-sm">
         <span className={labelClass}>Ghi chú</span>
@@ -71,17 +86,51 @@ export function SettlementForm({
           <button
             type="button"
             className="text-sm text-forest hover:underline"
-            onClick={() => setRows((current) => [...current, { content: "", spentOn: "", amount: "", invoiceNote: "" }])}
+            onClick={() => {
+              setRows((current) => [...current, blankLine(`line-${seq}`)]);
+              setSeq((current) => current + 1);
+            }}
           >
             Thêm dòng
           </button>
         </div>
         {rows.map((row, index) => (
-          <div key={index} className="grid gap-2 rounded-xl border border-line bg-cream/50 p-3 sm:grid-cols-4">
-            <input name="lineContent" value={row.content} placeholder="Nội dung" className={fieldClass} onChange={(event) => update(index, "content", event.target.value)} />
-            <input name="lineDate" type="date" value={row.spentOn} className={fieldClass} onChange={(event) => update(index, "spentOn", event.target.value)} />
-            <input name="lineAmount" type="number" min={1} value={row.amount} placeholder="Số tiền" className={fieldClass} onChange={(event) => update(index, "amount", event.target.value)} />
-            <input name="lineInvoice" value={row.invoiceNote} placeholder="Hóa đơn / chứng từ" className={fieldClass} onChange={(event) => update(index, "invoiceNote", event.target.value)} />
+          <div key={row.key} className="space-y-2 rounded-xl border border-line bg-cream/50 p-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium text-muted">Khoản {index + 1}</p>
+              <button type="button" className="text-sm text-[#8a3b32] hover:underline" onClick={() => removeRow(index)}>
+                Xóa
+              </button>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <input
+                name="lineContent"
+                value={row.content}
+                placeholder="Nội dung"
+                className={fieldClass}
+                onChange={(event) => update(index, "content", event.target.value)}
+              />
+              <input
+                name="lineDate"
+                type="date"
+                value={row.spentOn}
+                className={fieldClass}
+                onChange={(event) => update(index, "spentOn", event.target.value)}
+              />
+              <MoneyInput
+                name="lineAmount"
+                value={row.amount}
+                placeholder="Số tiền"
+                className={fieldClass}
+                onValueChange={(raw) => update(index, "amount", raw)}
+              />
+            </div>
+            <div className="text-sm">
+              <span className={labelClass}>Chứng từ</span>
+              <FilePicker name="lineFile" existingName={row.fileName} />
+              <input type="hidden" name="lineFileName" value={row.fileName} />
+              <input type="hidden" name="lineFilePath" value={row.filePath} />
+            </div>
           </div>
         ))}
       </div>
@@ -100,10 +149,6 @@ export function SettlementForm({
           </p>
         </div>
       ) : null}
-      <div className="text-sm">
-        <span className={labelClass}>File hóa đơn</span>
-        <FilePicker name="files" multiple />
-      </div>
       <div className="flex gap-2">
         <button name="intent" value="submit" className={btnPrimary}>
           Gửi duyệt
@@ -117,5 +162,13 @@ export function SettlementForm({
 
   function update(index: number, key: keyof Line, value: string) {
     setRows((current) => current.map((row, rowIndex) => (rowIndex === index ? { ...row, [key]: value } : row)));
+  }
+
+  function removeRow(index: number) {
+    setRows((current) => {
+      if (current.length === 1) return [blankLine(`line-${seq}`)];
+      return current.filter((_, rowIndex) => rowIndex !== index);
+    });
+    setSeq((current) => current + 1);
   }
 }

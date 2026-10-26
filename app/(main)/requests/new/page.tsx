@@ -1,7 +1,7 @@
 import { Role, TicketKind, TicketStatus } from "@/lib/enums";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { canAct, requireDbUser } from "@/lib/helpers";
+import { INTERNAL_ROLES, canAct, requireDbUser } from "@/lib/helpers";
 import { AdvanceForm } from "@/components/advance-form";
 import { PageHeader } from "@/components/page-header";
 import { SettlementForm } from "@/components/settlement-form";
@@ -12,10 +12,11 @@ export default async function NewTicketPage({
   searchParams: Promise<{ kind?: string; error?: string }>;
 }) {
   const user = await requireDbUser();
-  if (!canAct(user.role, [Role.USER])) redirect("/dashboard");
+  if (!canAct(user.role, INTERNAL_ROLES)) redirect("/dashboard");
   const { kind, error } = await searchParams;
   const settlement = kind === "hoan_ung";
-  const departments = user.role === Role.ADMIN ? await prisma.department.findMany({ orderBy: { name: "asc" } }) : [];
+  const needsDepartment = user.role === Role.ADMIN || !user.departmentId;
+  const departments = needsDepartment ? await prisma.department.findMany({ orderBy: { name: "asc" } }) : [];
 
   const advances = settlement
     ? await prisma.ticket.findMany({
@@ -57,6 +58,7 @@ export default async function NewTicketPage({
         <AdvanceForm
           departments={departments}
           role={user.role}
+          needsDepartment={needsDepartment}
           openAdvances={openAdvances.map((ticket) => ({
             code: ticket.code,
             title: ticket.title,

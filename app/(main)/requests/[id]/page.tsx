@@ -22,6 +22,7 @@ import {
   requireDbUser,
   settlementDiff,
   statusHint,
+  statusLabel,
   ticketInclude,
 } from "@/lib/helpers";
 
@@ -50,6 +51,7 @@ export default async function TicketDetailPage({
     ticket.status === TicketStatus.cho_lanh_dao;
   const canDecide =
     waiting &&
+    ticket.createdById !== user.id &&
     ((ticket.status === TicketStatus.cho_truong_bp &&
       canAct(user.role, [Role.TRUONG_BO_PHAN]) &&
       (user.role !== Role.TRUONG_BO_PHAN || user.departmentId === ticket.departmentId)) ||
@@ -132,7 +134,11 @@ export default async function TicketDetailPage({
           <div className="text-right">
             <p className="font-display text-3xl font-semibold tabular-nums text-ink">{formatVnd(ticket.amount)}</p>
             <div className="mt-2">
-              <StatusBadge status={ticket.status} kind={ticket.kind} />
+              <StatusBadge
+                status={ticket.status}
+                label={statusLabel(ticket.kind, ticket.status)}
+                hint={statusHint(ticket)}
+              />
             </div>
           </div>
         </div>
@@ -299,10 +305,18 @@ export default async function TicketDetailPage({
             <tbody>
               {ticket.lines.map((line) => (
                 <tr key={line.id} className="border-t border-line">
-                  <td className="px-4 py-2">{line.content}</td>
+                  <td className="px-4 py-2">{line.content || "—"}</td>
                   <td className="px-4 py-2">{formatDay(line.spentOn)}</td>
                   <td className="px-4 py-2">{formatVnd(line.amount)}</td>
-                  <td className="px-4 py-2">{line.invoiceNote || "—"}</td>
+                  <td className="px-4 py-2">
+                    {line.filePath ? (
+                      <a className="text-forest hover:underline" href={line.filePath} target="_blank" rel="noreferrer">
+                        {line.fileName || "Xem chứng từ"}
+                      </a>
+                    ) : (
+                      line.invoiceNote || "—"
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -327,7 +341,13 @@ export default async function TicketDetailPage({
       ) : null}
 
       {editable && ticket.kind === TicketKind.tam_ung ? (
-        <AdvanceForm ticket={ticket} departments={departments} role={user.role} openAdvances={[]} />
+        <AdvanceForm
+          ticket={ticket}
+          departments={departments}
+          role={user.role}
+          needsDepartment={user.role === Role.ADMIN || !user.departmentId}
+          openAdvances={[]}
+        />
       ) : null}
       {editable && ticket.kind === TicketKind.hoan_ung ? (
         <SettlementForm ticket={ticket} advances={myAdvances} />

@@ -1,14 +1,30 @@
 import { Role } from "@/lib/enums";
 import { Suspense } from "react";
 import { logoutAction } from "@/app/actions/auth";
-import { NavLink } from "@/components/nav-link";
-import { ROLE_LABEL } from "@/lib/helpers";
+import { NavGroup, NavLink } from "@/components/nav-link";
+import { INTERNAL_ROLES, ROLE_LABEL } from "@/lib/helpers";
 
-const NAV: { href: string; label: string; icon: IconName; roles: Role[] }[] = [
+const STAFF: Role[] = [...INTERNAL_ROLES, Role.ADMIN];
+
+const NAV: {
+  href?: string;
+  label: string;
+  icon: IconName;
+  roles: Role[];
+  children?: { href: string; label: string }[];
+}[] = [
   { href: "/dashboard", label: "Hộp việc", icon: "inbox", roles: [Role.USER, Role.TRUONG_BO_PHAN, Role.KE_TOAN, Role.LANH_DAO, Role.NCC, Role.ADMIN] },
   { href: "/requests", label: "Danh sách phiếu", icon: "list", roles: [Role.USER, Role.TRUONG_BO_PHAN, Role.KE_TOAN, Role.LANH_DAO, Role.ADMIN] },
-  { href: "/requests/new", label: "Tạm ứng", icon: "advance", roles: [Role.USER, Role.ADMIN] },
-  { href: "/requests/new?kind=hoan_ung", label: "Hoàn ứng", icon: "settle", roles: [Role.USER, Role.ADMIN] },
+  { href: "/requests/new", label: "Tạm ứng", icon: "advance", roles: STAFF },
+  {
+    label: "Hoàn ứng",
+    icon: "settle",
+    roles: STAFF,
+    children: [
+      { href: "/requests/new?kind=hoan_ung", label: "Tạo hoàn ứng" },
+      { href: "/requests?kind=hoan_ung&status=draft", label: "Nháp" },
+    ],
+  },
   { href: "/ncc", label: "Cổng nhà thầu", icon: "vendor", roles: [Role.NCC, Role.ADMIN] },
   { href: "/admin", label: "Quản trị", icon: "admin", roles: [Role.ADMIN] },
 ];
@@ -29,9 +45,13 @@ export function Sidebar({
       </div>
       <nav className="flex-1 space-y-1 px-3">
         <Suspense fallback={<div className="h-40" />}>
-          {NAV.filter((item) => item.roles.includes(user.role)).map((item) => (
-            <NavLink key={item.href} href={item.href} label={item.label} icon={<Icon name={item.icon} />} />
-          ))}
+          {NAV.filter((item) => item.roles.includes(user.role)).map((item) =>
+            item.children ? (
+              <NavGroup key={item.label} label={item.label} icon={<Icon name={item.icon} />} items={item.children} />
+            ) : (
+              <NavLink key={item.href} href={item.href!} label={item.label} icon={<Icon name={item.icon} />} />
+            ),
+          )}
         </Suspense>
       </nav>
       <div className="border-t border-line p-4">

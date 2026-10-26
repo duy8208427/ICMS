@@ -1,8 +1,7 @@
 .env
 .env.*
 !.env.example
+.vercel
 node_modules
 .next
-prisma/dev.db
-prisma/dev.db-journal
 public/uploads

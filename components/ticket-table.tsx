@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { KIND_DOT, KIND_LABEL, formatVnd } from "@/lib/helpers";
+import { KIND_DOT, KIND_LABEL, formatVnd, statusHint, statusLabel } from "@/lib/helpers";
 import { StatusBadge } from "@/components/status-badge";
 import { cardClass } from "@/components/ui";
 
@@ -56,7 +56,11 @@ export function TicketTable({
                 <td className="px-4 py-4 text-right font-medium tabular-nums text-ink">{formatVnd(row.amount)}</td>
                 <td className="px-4 py-4 text-muted">{row.createdBy?.name ?? "—"}</td>
                 <td className="px-4 py-4">
-                  <StatusBadge status={row.status} kind={row.kind} />
+                  <StatusBadge
+                    status={row.status}
+                    label={statusLabel(row.kind, row.status)}
+                    hint={statusHint({ kind: row.kind, status: row.status })}
+                  />
                 </td>
               </tr>
             ))

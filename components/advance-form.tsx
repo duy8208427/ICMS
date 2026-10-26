@@ -2,6 +2,7 @@ import { Department } from "@prisma/client";
 import { Role } from "@/lib/enums";
 import { saveAdvanceAction } from "@/app/actions/tickets";
 import { FilePicker } from "@/components/file-picker";
+import { MoneyInput } from "@/components/money-input";
 import { btnGhost, btnPrimary, cardClass, fieldClass, labelClass } from "@/components/ui";
 import { PURPOSE_LABEL, RECEIVE_LABEL, dayInput, formatDay } from "@/lib/helpers";
 
@@ -22,11 +23,13 @@ export function AdvanceForm({
   ticket,
   departments,
   role,
+  needsDepartment,
   openAdvances,
 }: {
   ticket?: Defaults;
   departments: Department[];
   role: string;
+  needsDepartment?: boolean;
   openAdvances: { code: string; title: string; settleDueOn: Date | null; overdue: boolean }[];
 }) {
   const overdue = openAdvances.filter((item) => item.overdue);
@@ -66,7 +69,7 @@ export function AdvanceForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className={labelClass}>Số tiền (đ)</span>
-          <input name="amount" type="number" min={1} required defaultValue={ticket?.amount} className={fieldClass} />
+          <MoneyInput name="amount" required defaultValue={ticket?.amount} className={fieldClass} />
         </label>
         <label className="block text-sm">
           <span className={labelClass}>Hình thức nhận</span>
@@ -91,7 +94,7 @@ export function AdvanceForm({
         <span className={labelClass}>Số tài khoản (nếu chuyển khoản)</span>
         <input name="bankAccount" defaultValue={ticket?.bankAccount ?? ""} className={fieldClass} placeholder="VCB 0123456789 - Nguyễn Văn An" />
       </label>
-      {role === Role.ADMIN ? (
+      {needsDepartment || role === Role.ADMIN ? (
         <label className="block text-sm">
           <span className={labelClass}>Bộ phận</span>
           <select name="departmentId" required defaultValue={ticket?.departmentId ?? ""} className={fieldClass}>

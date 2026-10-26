@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kế hoạch đưa vào dùng thật — Tạm ứng, hoàn ứng, thanh toán</title>
+  <style>
+    :root {
+      --forest: #1f4d3a;
+      --gold: #b08a3e;
+      --bg: #f7f3ec;
+      --text: #2b2520;
+      --muted: #7a6f63;
+      --card: #fffdf9;
+      --line: #e7dfd2;
+      --ok: #1f4d3a;
+      --warn: #8a5a12;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Be Vietnam Pro, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    header {
+      background: var(--forest);
+      color: #f7f3ec;
+      padding: 2rem 1.5rem 1.5rem;
+    }
+    header .wrap, main, footer .wrap { max-width: 960px; margin: 0 auto; }
+    header p { color: #e6efe9; margin: 0.5rem 0 0; }
+    header a { color: #f6edd8; }
+    h1 { margin: 0 0 0.35rem; font-family: "Be Vietnam Pro", "Segoe UI", Georgia, serif; }
+    main { padding: 1.5rem; }
+    nav.toc {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    nav.toc h2 { margin: 0 0 0.5rem; font-size: 1rem; }
+    nav.toc ol { margin: 0; padding-left: 1.25rem; }
+    nav.toc a { color: var(--forest); text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+    .progress {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.85rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .bar {
+      flex: 1;
+      height: 8px;
+      background: #efe8dc;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--forest);
+    }
+    .toolbar {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.85rem;
+    }
+    .toolbar button {
+      background: #e6efe9;
+      color: var(--forest);
+      border: 1px solid #c5d6cc;
+      border-radius: 8px;
+      padding: 0.35rem 0.7rem;
+      cursor: pointer;
+      font: inherit;
+    }
+    .toolbar button:hover { background: #d7e6dc; }
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    h2 { color: var(--forest); margin-top: 0; }
+    h3 { color: var(--text); margin-top: 1.25rem; }
+    h3:first-of-type { margin-top: 0.5rem; }
+    h4 { margin: 1rem 0 0.4rem; font-size: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td { border: 1px solid var(--line); padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
+    th { background: #efe8dc; }
+    code { background: #e6efe9; color: var(--forest); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.88em; }
+    a { color: var(--forest); }
+    ol, ul { padding-left: 1.25rem; }
+    footer { padding: 1rem 1.5rem 2rem; color: var(--muted); font-size: 0.85rem; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      vertical-align: 0.15em;
+      margin-right: 0.35rem;
+    }
+    .p0 { background: #e6efe9; color: var(--forest); }
+    .p1 { background: #f6edd8; color: var(--warn); }
+    .p2 { background: #efe8dc; color: var(--muted); }
+    .who {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      vertical-align: 0.15em;
+      margin-right: 0.35rem;
+    }
+    .who-biz { background: #f6edd8; color: var(--warn); }
+    .who-it { background: #e6efe9; color: var(--forest); }
+    .who-all { background: #efe8dc; color: var(--muted); }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 1rem;
+      font-size: 0.88rem;
+      margin: 0.75rem 0 0;
+      color: var(--muted);
+    }
+    .note {
+      background: #f6edd8;
+      border-left: 4px solid var(--gold);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 0.75rem 0;
+    }
+    .it-note {
+      background: #e6efe9;
+      border-left: 4px solid var(--forest);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 0.75rem 0;
+      font-size: 0.9rem;
+    }
+    .it-note strong { display: block; margin-bottom: 0.25rem; }
+    .check {
+      list-style: none;
+      padding-left: 0;
+      margin: 0.5rem 0 1rem;
+    }
+    .check li {
+      display: flex;
+      gap: 0.55rem;
+      align-items: flex-start;
+      padding: 0.35rem 0;
+      border-bottom: 1px dashed var(--line);
+    }
+    .check li:last-child { border-bottom: 0; }
+    .check input { margin-top: 0.35rem; accent-color: var(--forest); }
+    .check label { cursor: pointer; flex: 1; }
+    .check li.done label { color: var(--muted); text-decoration: line-through; }
+    .confirm {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+    .fill-group {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.75rem 1rem 1.1rem;
+      margin: 1rem 0 0;
+    }
+    .fill-group h3 { margin-top: 0; }
+    .fill input, .fill textarea {
+      width: 100%;
+      font: inherit;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+      background: #fff;
+      color: var(--text);
+    }
+    .fill label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0.85rem 0 0.2rem;
+    }
+    .fill .hint {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin: 0 0 0.3rem;
+    }
+    .week {
+      display: grid;
+      grid-template-columns: 5rem 1fr 7.5rem;
+      gap: 0.5rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.92rem;
+    }
+    .week:last-child { border-bottom: 0; }
+    .week b { color: var(--forest); }
+    .owner { color: var(--muted); }
+    @media print {
+      header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      nav.toc, .toolbar, .progress { display: none; }
+      section { break-inside: avoid; box-shadow: none; }
+      a { text-decoration: none; }
+    }
+    @media (max-width: 640px) {
+      .week { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Kế hoạch đưa vào dùng thật</h1>
+      <p>Việc cần làm để ICMS chạy tiền thật: tạm ứng, hoàn ứng, thanh toán nhà thầu.</p>
+      <p>
+        Hướng dẫn dùng phiếu:
+        <a href="USERGUIDE_HeThongThanhToan.html">USERGUIDE_HeThongThanhToan.html</a>
+        · Tham khảo nghiệp vụ:
+        <a href="https://bizzi.vn/tam-ung-la-gi-hoan-ung-la-gi/">Bizzi — tạm ứng / hoàn ứng</a>
+      </p>
+      <div class="legend">
+        <span><span class="who who-biz">Nghiệp vụ</span> lãnh đạo, kế toán, trưởng bộ phận</span>
+        <span><span class="who who-it">IT</span> người kỹ thuật</span>
+        <span><span class="who who-all">Cùng làm</span> mọi vai trò</span>
+      </div>
+    </div>
+  </header>
+  <main>
+    <nav class="toc">
+      <h2>Mục lục</h2>
+      <ol>
+        <li><a href="#hien-trang">Đang có gì, còn thiếu gì</a></li>
+        <li><a href="#nghiep-vu">Việc nghiệp vụ phải chốt</a></li>
+        <li><a href="#it">Việc IT phải làm</a></li>
+        <li><a href="#chay-thu">Cùng chạy thử rồi mở bộ phận đầu</a></li>
+        <li><a href="#tuan">Lịch theo tuần</a></li>
+        <li><a href="#pham-vi">Phiếu ghi quyết định</a></li>
+      </ol>
+      <p class="note" style="margin-bottom: 0;">Làm việc <strong>bắt buộc trước</strong> rồi mới mở cho bộ phận đầu. Việc chuẩn thêm làm sau 2–4 tuần chạy thật. Việc để sau không chặn lần mở đầu. Tick việc đã xong; điền phiếu cuối trang; in ra giấy nếu cần.</p>
+      <div class="progress">
+        <div class="bar" aria-hidden="true"><span id="bar"></span></div>
+        <span id="count">0 / 0</span>
+      </div>
+      <div class="toolbar">
+        <button type="button" id="print">In / lưu PDF</button>
+        <button type="button" id="reset">Xóa dấu đã làm</button>
+      </div>
+    </nav>
+
+    <section id="hien-trang">
+      <h2>Đang có gì, còn thiếu gì</h2>
+      <p>ICMS đã có <strong>ba loại phiếu</strong> để xin tiền, duyệt và chi:</p>
+      <ul>
+        <li>Tạm ứng nội bộ — nhân viên xin tiền trước, rồi hoàn lại bằng chứng từ.</li>
+        <li>Hoàn ứng nội bộ — kê chi phí thật sau khi đã nhận tạm ứng.</li>
+        <li>Thanh toán nhà thầu theo hợp đồng — nhà thầu xin từng đợt, không vượt giá trị hợp đồng.</li>
+      </ul>
+      <p>Mua sắm thiết bị và thi công nằm ngoài lần này. Kế toán vẫn ghi sổ, thuế, hạch toán trên phần mềm kế toán đang dùng (MISA / Fast). ICMS là nơi xin — duyệt — chi — hoàn ứng.</p>
+      <p>Bản thử trên mạng: <a href="https://he-thong-thanh-toan.vercel.app">https://he-thong-thanh-toan.vercel.app</a>, mật khẩu mẫu <code>demo123</code>. Tiền thật đi trên bản dùng thật, sau khi xong việc bắt buộc ở dưới.</p>
+
+      <h3>Đã chạy được</h3>
+      <ul>
+        <li>Phiếu tạm ứng đi lần lượt: nhân viên gửi → trưởng bộ phận → kế toán → lãnh đạo → kế toán chi tiền → nhân viên hoàn ứng.</li>
+        <li>Phiếu hoàn ứng gắn đúng một phiếu đã chi. Chi ít hơn thì thu tiền thừa. Chi bằng thì quyết toán. Chi vượt thì lãnh đạo duyệt rồi chi thêm.</li>
+        <li>Nhà thầu xin nhiều đợt; trưởng bộ phận xác nhận khối lượng.</li>
+        <li>Hộp việc nhắc phiếu quá hạn. Nhân viên vẫn xin được tạm ứng mới.</li>
+        <li>Có dòng thời gian duyệt và đính kèm file.</li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Host hiện tại: Vercel + Postgres (Supabase) + Vercel Blob. Prisma vẫn là ORM.
+      </div>
+
+      <h3>Còn thiếu trước khi chi tiền thật</h3>
+      <ul>
+        <li>Màn hình thêm / khóa người dùng, nhà thầu, bộ phận; người dùng tự đổi mật khẩu.</li>
+        <li>Quy chế giấy đã ký; quyết định còn phiếu quá hạn thì có được xin tiếp.</li>
+        <li>Xuất Excel cho kế toán đối chiếu sổ.</li>
+        <li>Địa chỉ web công ty; gỡ tài khoản mẫu khỏi bản dùng thật.</li>
+        <li>Sau vài tuần chạy: ngân sách, hạn mức duyệt theo số tiền, email nhắc hạn.</li>
+      </ul>
+    </section>
+
+    <section id="nghiep-vu">
+      <h2><span class="who who-biz">Nghiệp vụ</span> Việc phải chốt</h2>
+      <p>Người làm: lãnh đạo, kế toán, trưởng bộ phận. Chốt xong thì ghi vào <a href="#pham-vi">phiếu cuối trang</a> để IT làm đúng. Người kỹ thuật không chốt thay các quyết định này.</p>
+
+      <h3><span class="badge p0">Bắt buộc trước</span> Trước khi bộ phận đầu dùng</h3>
+
+      <h4>0. Chốt lần đầu dùng thật</h4>
+      <p>Tick khi đã thống nhất trong cuộc họp ngắn. Ghi kết quả vào phiếu cuối trang.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-0a" /><label for="c-0a">Lần đầu chỉ dùng tạm ứng và hoàn ứng nội bộ, hay mở luôn cổng để nhà thầu xin thanh toán?</label></li>
+        <li><input type="checkbox" id="c-0b" /><label for="c-0b">Đã chọn một bộ phận chạy trước. Nên chọn bộ phận thường đi công tác.</label></li>
+        <li><input type="checkbox" id="c-0c" /><label for="c-0c">Đã chốt ai quản trị vận hành (thêm người, khóa tài khoản), ai chi tiền, ai là lãnh đạo duyệt.</label></li>
+        <li><input type="checkbox" id="c-0d" /><label for="c-0d">Mọi hạch toán chi phí và thuế vẫn làm trên phần mềm kế toán hiện có. ICMS không thay sổ cái.</label></li>
+      </ul>
+
+      <h4>1. Viết quy chế tạm ứng / hoàn ứng</h4>
+      <p>Soạn trên giấy hoặc file Word/PDF, lãnh đạo và kế toán ký. Làm xong quy chế rồi IT mới sửa phần mềm cho khớp. ICMS chưa tự chứa các quy định dưới đây — người dùng phải biết và làm đúng.</p>
+      <table>
+        <thead><tr><th>Cần chốt</th><th>Gợi ý để điền</th></tr></thead>
+        <tbody>
+          <tr><td>Loại việc được xin tạm ứng</td><td>Công tác / tiếp khách / sự kiện / khác — đúng các ô trên form hiện tại</td></tr>
+          <tr><td>Ai được xin</td><td>Nhân viên thuộc bộ phận đã có trưởng trên hệ thống</td></tr>
+          <tr><td>Bao lâu phải hoàn ứng</td><td>Ví dụ: 7 ngày sau ngày kết thúc công tác, hoặc đúng hạn ghi trên phiếu</td></tr>
+          <tr><td>Còn khoản quá hạn thì có xin tiếp?</td><td>Nhiều công ty cấm xin tiếp. ICMS hiện vẫn cho xin, chỉ nhắc trên màn hình. Chốt: nhắc, hay cấm và cho lãnh đạo mở ngoại lệ</td></tr>
+          <tr><td>Từ số tiền nào lãnh đạo phải duyệt</td><td>Ví dụ: dưới X triệu trưởng bộ phận và kế toán là đủ; trên X qua lãnh đạo. Hiện nay <strong>mọi</strong> tạm ứng đều qua lãnh đạo</td></tr>
+          <tr><td>Chứng từ khi hoàn ứng</td><td>Hóa đơn GTGT / biên lai / bảng kê; mất hóa đơn thì xử lý thế nào</td></tr>
+          <tr><td>Cách chi tiền</td><td>Tiền mặt hoặc chuyển khoản; kế toán ghi số ủy nhiệm chi trên phiếu</td></tr>
+        </tbody>
+      </table>
+      <ul class="check">
+        <li><input type="checkbox" id="c-1a" /><label for="c-1a">Quy chế tạm ứng / hoàn ứng đã soạn, lãnh đạo và kế toán đã ký.</label></li>
+      </ul>
+
+      <h4>Còn phiếu quá hạn thì xử lý thế nào</h4>
+      <p>Hiện tại nhân viên còn phiếu tạm ứng quá hạn vẫn xin được phiếu mới. Hệ thống chỉ nhắc trên màn hình. Chọn một cách, ghi vào phiếu cuối trang. IT sẽ làm đúng lựa chọn đó.</p>
+      <table>
+        <thead><tr><th>Chọn</th><th>Khi nhân viên còn phiếu quá hạn</th></tr></thead>
+        <tbody>
+          <tr><td>Nhắc</td><td>Vẫn xin được tạm ứng mới. Ghi rõ cách này trong quy chế.</td></tr>
+          <tr><td>Cấm xin tiếp</td><td>Không gửi tạm ứng mới cho đến khi hoàn xong phiếu quá hạn. Quản trị hoặc lãnh đạo được mở ngoại lệ, phải ghi chú. Nhiều công ty chọn cách này.</td></tr>
+        </tbody>
+      </table>
+
+      <h4>Giữ file chứng từ bao lâu</h4>
+      <p>Hóa đơn, biên lai đính trên phiếu cần giữ đủ thời gian pháp lý. Kế toán chốt số năm; IT bật lưu trữ cho đúng.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-4c" /><label for="c-4c">Đã chốt thời gian giữ file hóa đơn / biên lai (thường 5–7 năm). Ghi số năm vào phiếu cuối trang.</label></li>
+      </ul>
+
+      <h3><span class="badge p1">Sau 2–4 tuần</span> Chuẩn thêm khi đã chạy ổn</h3>
+      <p>Các câu hỏi dưới đây nhờ IT làm sau khi bộ phận đầu đã chạy 2–4 tuần. Chúng không chặn lần mở đầu.</p>
+
+      <h4>9. Ngân sách và mã chi phí</h4>
+      <ul class="check">
+        <li><input type="checkbox" id="c-9a" /><label for="c-9a">Mỗi phiếu gắn phòng ban (đã có) và, nếu công ty dùng, gắn thêm dự án hoặc mã chi phí.</label></li>
+        <li><input type="checkbox" id="c-9b" /><label for="c-9b">Có hạn mức ngân sách theo tháng hoặc dự án. Khi duyệt, hệ thống nhắc hoặc cấm nếu vượt.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Schema hiện: <code>Department</code> trên <code>Ticket</code>, chưa có Budget / Project.
+      </div>
+
+      <h4>10. Duyệt theo mức tiền</h4>
+      <p>Hiện nay mọi tạm ứng đều qua lãnh đạo. Sau này có thể:</p>
+      <ul>
+        <li>Dưới mức đã chốt: trưởng bộ phận và kế toán là đủ.</li>
+        <li>Trên mức, hoặc ngoài quy chế: thêm lãnh đạo.</li>
+        <li>Ngoại lệ: bắt buộc ghi chú.</li>
+      </ul>
+      <ul class="check">
+        <li><input type="checkbox" id="c-10a" /><label for="c-10a">Luồng duyệt theo mức tiền đã chạy trên bản dùng thật.</label></li>
+      </ul>
+
+      <h4>11. Nhắc hạn hoàn ứng</h4>
+      <ul class="check">
+        <li><input type="checkbox" id="c-11a" /><label for="c-11a">Có báo cáo tạm ứng đang mở theo số ngày (0–7 / 8–15 / trên 15 ngày, hoặc theo hạn trên phiếu).</label></li>
+        <li><input type="checkbox" id="c-11b" /><label for="c-11b">Có email nhắc: trước hạn 2 ngày, đúng hạn, quá hạn (gửi thêm trưởng bộ phận).</label></li>
+        <li><input type="checkbox" id="c-11c" /><label for="c-11c">Có màn hình tổng số tiền tạm ứng chưa hoàn, theo người và bộ phận.</label></li>
+      </ul>
+
+      <h4>12. Chất lượng chứng từ khi hoàn ứng</h4>
+      <p>Chưa cần máy đọc hóa đơn tự động.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-12a" /><label for="c-12a">Gửi hoàn ứng bắt buộc có ít nhất một file đính kèm.</label></li>
+        <li><input type="checkbox" id="c-12b" /><label for="c-12b">Mỗi dòng chi có ô số hóa đơn / mã số thuế.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Dùng thống nhất <code>ExpenseLine.invoiceNote</code>.
+      </div>
+
+      <h4>13. Xuất lịch sử duyệt cho kiểm toán</h4>
+      <ul class="check">
+        <li><input type="checkbox" id="c-13a" /><label for="c-13a">Xuất được lịch sử ai duyệt gì, theo khoảng ngày, file CSV, phục vụ kiểm toán nội bộ.</label></li>
+      </ul>
+
+      <h3><span class="badge p2">Để sau</span> Nhu cầu ghi nhận, không chặn lần mở đầu</h3>
+      <ul>
+        <li>Máy đọc hóa đơn điện tử tự động.</li>
+        <li>Ứng dụng điện thoại chụp biên lai.</li>
+        <li>Thẻ công ty, hạn mức số, kết nối ngân hàng.</li>
+        <li>Đẩy bút toán sang MISA / Fast.</li>
+        <li>Tạm ứng mua hàng / đơn hàng / vật tư — ngoài ba loại phiếu hiện có.</li>
+        <li>Chỉ số tỷ lệ phiếu ngoại lệ, tỷ lệ chứng từ bị trả lại.</li>
+      </ul>
+    </section>
+
+    <section id="it">
+      <h2><span class="who who-it">IT</span> Việc phải làm</h2>
+      <p>Người làm: kỹ thuật. Làm theo quyết định đã ghi ở <a href="#pham-vi">phiếu cuối trang</a>. Người nghiệp vụ đọc câu đầu mỗi việc; khung xanh dưới đây dành cho người sửa code.</p>
+
+      <h3><span class="badge p0">Bắt buộc trước</span> Tách bản dùng thật khỏi bản thử</h3>
+      <p>Bản thử và bản dùng thật dùng tài khoản, dữ liệu và kho file riêng. Tiền thật không nằm chung với tài khoản mẫu.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-2a" /><label for="c-2a">Đã tạo chỗ chạy riêng cho bản dùng thật, hoặc đã sao lưu rồi xóa sạch dữ liệu thử.</label></li>
+        <li><input type="checkbox" id="c-2b" /><label for="c-2b">Đã điền đúng địa chỉ kết nối cơ sở dữ liệu của bản dùng thật.</label></li>
+        <li><input type="checkbox" id="c-2c" /><label for="c-2c">Mã bí mật đăng nhập dài, khác máy làm việc cá nhân.</label></li>
+        <li><input type="checkbox" id="c-2d" /><label for="c-2d">Địa chỉ đăng nhập trùng địa chỉ web dùng thật.</label></li>
+        <li><input type="checkbox" id="c-2e" /><label for="c-2e">Token lưu file thuộc kho dùng thật.</label></li>
+        <li><input type="checkbox" id="c-2f" /><label for="c-2f">File mật khẩu máy không đưa lên git.</label></li>
+        <li><input type="checkbox" id="c-2g" /><label for="c-2g">Trang đăng nhập bản dùng thật không còn nút / tài khoản mẫu.</label></li>
+        <li><input type="checkbox" id="c-2h" /><label for="c-2h">Không chạy script tạo dữ liệu mẫu trên dữ liệu thật. Script đó xóa hết người và phiếu rồi tạo lại bản thử.</label></li>
+        <li><input type="checkbox" id="c-2i" /><label for="c-2i">Người lạ không vào được địa chỉ thử trên mạng.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Tạo project Vercel / Supabase riêng, hoặc wipe DB demo sau backup. Env: <code>DATABASE_URL</code> (pooler 6543) + <code>DIRECT_URL</code> (5432), xem <code>.env.example</code>. <code>AUTH_SECRET</code> ngẫu nhiên. <code>AUTH_URL</code> = URL production; <code>AUTH_TRUST_HOST=true</code>. <code>BLOB_READ_WRITE_TOKEN</code> của store production. Không commit <code>.env</code> / <code>.env.local</code>. Gỡ chip demo trên <code>/login</code> (<code>app/login/login-form.tsx</code> — <code>pickDemo</code> / <code>demo123</code>). Không chạy <code>prisma/seed.ts</code> trên DB thật. Hạn chế <code>.vercel.app</code> bằng SSO Deployment Protection hoặc chỉ custom domain nội bộ.
+      </div>
+
+      <h3>Người dùng, bộ phận, nhà thầu</h3>
+      <p>Trang Quản trị hiện chỉ xem danh sách, chưa thêm được người. Trước khi xong màn hình thêm, tạo người bằng công cụ kỹ thuật. Dùng danh sách nghiệp vụ đã giao. Bỏ script dữ liệu mẫu.</p>
+      <table>
+        <thead><tr><th>Vai trò trên phiếu</th><th>Số lượng tối thiểu</th><th>Gắn với</th></tr></thead>
+        <tbody>
+          <tr><td>Quản trị</td><td>1 người</td><td>Không cần bộ phận</td></tr>
+          <tr><td>Kế toán</td><td>1 người</td><td>—</td></tr>
+          <tr><td>Lãnh đạo</td><td>1 người</td><td>—</td></tr>
+          <tr><td>Trưởng bộ phận</td><td>1 người mỗi bộ phận chạy</td><td>Đúng bộ phận đó</td></tr>
+          <tr><td>Nhân viên</td><td>Những người chạy thử</td><td>Đúng bộ phận, đúng trưởng</td></tr>
+          <tr><td>Nhà thầu</td><td>Chỉ khi nghiệp vụ mở cổng nhà thầu</td><td>Đúng hồ sơ nhà thầu</td></tr>
+        </tbody>
+      </table>
+      <p>Mỗi người: tên đăng nhập thật, mật khẩu riêng, email nếu có. Nhà thầu: tên, mã số thuế, địa chỉ.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-3a" /><label for="c-3a">Quản trị thêm / khóa người, đặt lại mật khẩu, gán vai trò và bộ phận / nhà thầu.</label></li>
+        <li><input type="checkbox" id="c-3b" /><label for="c-3b">Quản trị thêm bộ phận, thêm nhà thầu.</label></li>
+        <li><input type="checkbox" id="c-3c" /><label for="c-3c">Người dùng tự đổi mật khẩu; bắt buộc đổi lần đầu đăng nhập.</label></li>
+        <li><input type="checkbox" id="c-3d" /><label for="c-3d">Mật khẩu không hiện trên màn hình.</label></li>
+        <li><input type="checkbox" id="c-3e" /><label for="c-3e">Đã tạo tài khoản thật cho bộ phận chạy thử. Bản dùng thật không còn tài khoản mẫu <code>user</code> / <code>admin</code>.</label></li>
+        <li><input type="checkbox" id="c-61a" /><label for="c-61a">Trang đăng nhập bản dùng thật không còn tài khoản mẫu.</label></li>
+        <li><input type="checkbox" id="c-61b" /><label for="c-61b">Quản trị tạo người, đặt lại mật khẩu, thêm bộ phận, thêm nhà thầu mà không cần gọi kỹ thuật.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Trang <code>app/(main)/admin/page.tsx</code> hiện chỉ đọc. Vai trò trong <code>lib/enums.ts</code>: <code>ADMIN</code>, <code>KE_TOAN</code>, <code>LANH_DAO</code>, <code>TRUONG_BO_PHAN</code> (+ <code>departmentId</code>), <code>USER</code> (+ <code>departmentId</code>), <code>NCC</code> (+ <code>vendorId</code>). Hash mật khẩu bcrypt. Tạo user tạm bằng Prisma Studio / script, không dùng seed demo.
+      </div>
+
+      <h3>File đính kèm và sao lưu</h3>
+      <p>File hóa đơn phải mở lại được ngày hôm sau, kể cả khi triển khai lại phần mềm. Dữ liệu phiếu phải có bản copy định kỳ. Thời gian giữ file do nghiệp vụ chốt ở trên.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-4a" /><label for="c-4a">File chứng từ trên bản dùng thật lưu vào kho bền. Triển khai lại phần mềm không làm mất file.</label></li>
+        <li><input type="checkbox" id="c-4b" /><label for="c-4b">Đã bật sao lưu cơ sở dữ liệu.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Upload production đi Vercel Blob (<code>lib/uploads.ts</code>), không ghi đĩa ephemeral trên Vercel. Backup Postgres: Supabase PITR hoặc dump định kỳ.
+      </div>
+
+      <h3>Địa chỉ web công ty</h3>
+      <p>Nhân viên mở một địa chỉ nội bộ quen thuộc, có ổ khóa trình duyệt, tên công ty trên tab. Thử đủ vòng: đăng nhập, tạo phiếu, đính file, duyệt, chi tiền.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-5a" /><label for="c-5a">Đã gắn địa chỉ web công ty, có HTTPS.</label></li>
+        <li><input type="checkbox" id="c-5b" /><label for="c-5b">Địa chỉ đăng nhập trùng địa chỉ đó.</label></li>
+        <li><input type="checkbox" id="c-5c" /><label for="c-5c">Icon và tiêu đề trang đúng tên công ty, không còn chữ demo.</label></li>
+        <li><input type="checkbox" id="c-5d" /><label for="c-5d">Trên địa chỉ mới: đăng nhập, tạo phiếu, đính file, duyệt, chi tiền đều chạy.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Custom domain trên Vercel. <code>AUTH_URL</code> trỏ đúng domain đó.
+      </div>
+
+      <h3>Xuất Excel cho kế toán</h3>
+      <p>Kế toán lọc theo ngày, loại phiếu, trạng thái, tải file Excel hoặc CSV, rồi copy sang MISA / Fast. Chưa cần nối thẳng hai phần mềm.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-62a" /><label for="c-62a">Xuất danh sách phiếu: mã, loại, người tạo, bộ phận, số tiền, trạng thái, ngày chi, số chứng từ.</label></li>
+        <li><input type="checkbox" id="c-62b" /><label for="c-62b">Xuất số dư tạm ứng đang mở: phiếu tạm ứng đã chi tiền, chưa hoàn xong.</label></li>
+        <li><input type="checkbox" id="c-62c" /><label for="c-62c">(Tuỳ chọn) xuất từng dòng chi trên phiếu hoàn ứng.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Gợi ý đặt nút trên trang danh sách phiếu hoặc <code>/admin</code>. Dùng <code>prisma.ticket.findMany</code> + <code>visibleTicketWhere</code> trong <code>lib/helpers.ts</code>. Số dư đang mở: loại <code>tam_ung</code>, trạng thái <code>da_chi</code>, chưa có hoàn ứng đã quyết toán.
+      </div>
+
+      <h3>Làm đúng quyết định quá hạn</h3>
+      <p>Nghiệp vụ đã chọn Nhắc hoặc Cấm xin tiếp ở phần trên. Nếu chọn Cấm: nhân viên còn phiếu đã nhận tiền quá hạn thì không gửi được tạm ứng mới; quản trị hoặc lãnh đạo mở ngoại lệ kèm ghi chú.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-63a" /><label for="c-63a">Nghiệp vụ đã chốt Nhắc hoặc Cấm xin tiếp, và nếu chọn Cấm thì phần mềm đã chặn và cho mở ngoại lệ.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        Hiện: <code>overdueWhere</code> trong <code>lib/helpers.ts</code>; form <code>components/advance-form.tsx</code> chỉ cảnh báo. Chặn khi còn phiếu <code>da_chi</code> quá hạn chưa hoàn; ADMIN / lãnh đạo mở ngoại lệ kèm ghi chú.
+      </div>
+
+      <h3>Số phiếu theo năm</h3>
+      <p>Mã phiếu dạng TU-2026-0001. Sang năm mới, số thứ tự bắt đầu lại theo năm, không bị nhảy số sai.</p>
+      <ul class="check">
+        <li><input type="checkbox" id="c-64a" /><label for="c-64a">Đã kiểm tra mã phiếu theo năm: sang năm mới không bị reset nhầm.</label></li>
+      </ul>
+      <div class="it-note">
+        <strong>Ghi chú cho IT</strong>
+        <code>nextTicketCode</code> format <code>TU-YYYY-nnnn</code> trong <code>lib/helpers.ts</code>.
+      </div>
+
+      <h3 id="file">File code cần đụng (việc bắt buộc trước)</h3>
+      <table>
+        <thead><tr><th>Việc</th><th>File</th></tr></thead>
+        <tbody>
+          <tr><td>Gỡ đăng nhập mẫu</td><td><code>app/login/login-form.tsx</code></td></tr>
+          <tr><td>Đăng nhập / biến môi trường</td><td><code>auth.ts</code>, <code>.env.example</code></td></tr>
+          <tr><td>Màn hình quản trị thêm / khóa người</td><td><code>app/(main)/admin/page.tsx</code> + server actions mới</td></tr>
+          <tr><td>Người dùng / mật khẩu</td><td><code>prisma/schema.prisma</code> (<code>User</code>) — seed không chạy trên bản dùng thật</td></tr>
+          <tr><td>Nhắc / cấm quá hạn</td><td><code>lib/helpers.ts</code> (<code>overdueWhere</code>), <code>components/advance-form.tsx</code></td></tr>
+          <tr><td>Mã phiếu</td><td><code>lib/helpers.ts</code> (<code>nextTicketCode</code>)</td></tr>
+          <tr><td>Đính kèm file</td><td><code>lib/uploads.ts</code></td></tr>
+          <tr><td>Vai trò / loại phiếu</td><td><code>lib/enums.ts</code></td></tr>
+          <tr><td>Dữ liệu mẫu (chỉ máy làm việc)</td><td><code>prisma/seed.ts</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="chay-thu">
+      <h2><span class="who who-all">Cùng làm</span> Chạy thử rồi mở bộ phận đầu</h2>
+      <p>Khi nghiệp vụ đã ký quy chế và IT đã xong việc bắt buộc, mọi vai trò cùng tập và thử trên bản dùng thật (dữ liệu giả hoặc số tiền nhỏ).</p>
+
+      <h3>Đào tạo</h3>
+      <ul class="check">
+        <li><input type="checkbox" id="c-7a" /><label for="c-7a">Một buổi: nhân viên tạo tạm ứng và hoàn ứng.</label></li>
+        <li><input type="checkbox" id="c-7b" /><label for="c-7b">Một buổi: trưởng bộ phận, kế toán, lãnh đạo duyệt và chi tiền.</label></li>
+        <li><input type="checkbox" id="c-7c" /><label for="c-7c">In một trang “khi nào bấm nút nào” từ hướng dẫn sử dụng. Bỏ tài khoản mẫu khỏi trang in.</label></li>
+        <li><input type="checkbox" id="c-7d" /><label for="c-7d">Hai tuần đầu: Excel / email chạy song song với ICMS. Bỏ Excel khi kế toán đối chiếu khớp.</label></li>
+      </ul>
+
+      <h3>Mỗi vai trò làm thử một lần</h3>
+      <p>Làm đúng nút trên phiếu. Người xác nhận: đúng vai trò đó tick khi đã làm xong trên bản dùng thật.</p>
+      <ul class="check">
+        <li>
+          <input type="checkbox" id="c-7e" />
+          <label for="c-7e">Nhân viên gửi tạm ứng và đính file → trưởng bộ phận bấm <strong>Đồng ý</strong> → kế toán bấm <strong>Đồng ý</strong> → lãnh đạo bấm <strong>Đồng ý</strong> → kế toán chi tiền.
+            <span class="confirm">Người xác nhận: một người mỗi vai trò.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-7f" />
+          <label for="c-7f">Hoàn ứng chi <strong>ít hơn</strong> số đã ứng → kế toán bấm <strong>Chuyển thu tiền thừa</strong> → phiếu tạm ứng gốc đóng.
+            <span class="confirm">Người xác nhận: kế toán.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-7g" />
+          <label for="c-7g">Hoàn ứng chi <strong>bằng</strong> số đã ứng → kế toán bấm <strong>Quyết toán</strong>.
+            <span class="confirm">Người xác nhận: kế toán.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-7h" />
+          <label for="c-7h">Hoàn ứng chi <strong>vượt</strong> → lãnh đạo bấm <strong>Đồng ý</strong> → kế toán chi thêm.
+            <span class="confirm">Người xác nhận: lãnh đạo và kế toán.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-7i" />
+          <label for="c-7i">(Nếu mở cổng nhà thầu) hai đợt thanh toán đi được; đợt ba vượt hợp đồng bị chặn.
+            <span class="confirm">Người xác nhận: nhà thầu thử và trưởng bộ phận.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-7j" />
+          <label for="c-7j">Bấm <strong>Trả lại để sửa</strong> hoặc <strong>Từ chối</strong> có lý do; nhân viên gửi lại được.
+            <span class="confirm">Người xác nhận: trưởng bộ phận hoặc kế toán, và nhân viên.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-7k" />
+          <label for="c-7k">Người A không thấy phiếu của người B.
+            <span class="confirm">Người xác nhận: hai nhân viên khác bộ phận hoặc IT.</span>
+          </label>
+        </li>
+      </ul>
+
+      <h3>Được mở cho bộ phận đầu tiên khi mọi dòng dưới đây đã tick</h3>
+      <ul class="check">
+        <li>
+          <input type="checkbox" id="c-8a" />
+          <label for="c-8a">Bản dùng thật không còn mật khẩu mẫu <code>demo123</code> và nút đăng nhập mẫu.
+            <span class="confirm">Người xác nhận: IT.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-8b" />
+          <label for="c-8b">Mỗi người thật một tài khoản, đổi được mật khẩu.
+            <span class="confirm">Người xác nhận: IT và người quản trị vận hành.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-8c" />
+          <label for="c-8c">Quản trị thêm được người mới mà không cần gọi kỹ thuật.
+            <span class="confirm">Người xác nhận: người quản trị vận hành.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-8d" />
+          <label for="c-8d">File chứng từ mở lại được sau 24 giờ, không mất khi triển khai lại.
+            <span class="confirm">Người xác nhận: IT.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-8e" />
+          <label for="c-8e">Kế toán xuất được danh sách phiếu và số dư tạm ứng trong tuần.
+            <span class="confirm">Người xác nhận: kế toán.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-8f" />
+          <label for="c-8f">Quy chế đã ký; các bước thử ở trên đều qua.
+            <span class="confirm">Người xác nhận: lãnh đạo và kế toán.</span>
+          </label>
+        </li>
+        <li>
+          <input type="checkbox" id="c-8g" />
+          <label for="c-8g">Sao lưu dữ liệu đã bật.
+            <span class="confirm">Người xác nhận: IT.</span>
+          </label>
+        </li>
+      </ul>
+    </section>
+
+    <section id="tuan">
+      <h2>Lịch theo tuần</h2>
+      <div class="week"><b>Tuần 0</b><span>Chốt phạm vi lần đầu và ký quy chế giấy</span><span class="owner">Nghiệp vụ</span></div>
+      <div class="week"><b>Tuần 1</b><span>Tách bản dùng thật, sao lưu, gắn địa chỉ web công ty</span><span class="owner">IT</span></div>
+      <div class="week"><b>Tuần 1</b><span>Màn hình quản trị thêm người, gỡ tài khoản mẫu, tạo người thật</span><span class="owner">IT</span></div>
+      <div class="week"><b>Tuần 1–2</b><span>Xuất Excel cho kế toán</span><span class="owner">IT</span></div>
+      <div class="week"><b>Tuần 2</b><span>Làm đúng quyết định quá hạn (nếu chọn Cấm xin tiếp)</span><span class="owner">IT</span></div>
+      <div class="week"><b>Tuần 2</b><span>Đào tạo và mỗi vai trò làm thử một lần</span><span class="owner">Cùng làm</span></div>
+      <div class="week"><b>Tuần 3</b><span>Mở cho bộ phận đầu tiên (mọi việc bắt buộc đã tick)</span><span class="owner">Cùng làm</span></div>
+      <div class="week"><b>Tuần 4–8</b><span>Việc chuẩn thêm: thường làm nhắc hạn trước, ngân sách sau</span><span class="owner">Cùng làm</span></div>
+    </section>
+
+    <section id="pham-vi">
+      <h2>Phiếu ghi quyết định</h2>
+      <p>Điền khi đã chốt. Ô lưu trên trình duyệt này, không gửi đi đâu. In trang để có bản giấy. Người nghiệp vụ điền nhóm đầu; người IT điền nhóm sau.</p>
+
+      <div class="fill">
+        <div class="fill-group">
+          <h3><span class="who who-biz">Nghiệp vụ</span> Điền nhóm này</h3>
+
+          <label for="f-date">Ngày mở cho bộ phận đầu</label>
+          <span class="hint">Ngày nhân viên bộ phận chạy trước được đăng nhập và xin tiền thật.</span>
+          <input id="f-date" type="text" placeholder="VD: 03/11/2026" />
+
+          <label for="f-dept">Bộ phận chạy trước</label>
+          <span class="hint">Một bộ phận thôi cho lần đầu. Nên chọn bộ phận thường đi công tác.</span>
+          <input id="f-dept" type="text" placeholder="VD: Kinh doanh" />
+
+          <label for="f-ncc">Nhà thầu có được xin thanh toán lần này?</label>
+          <span class="hint">Ghi Có nếu mở cổng nhà thầu. Ghi Không nếu lần đầu chỉ tạm ứng / hoàn ứng nội bộ.</span>
+          <input id="f-ncc" type="text" placeholder="Có / Không" />
+
+          <label for="f-overdue">Còn phiếu quá hạn thì xử lý thế nào?</label>
+          <span class="hint">Nhắc = vẫn xin được tạm ứng mới. Cấm xin tiếp = phải hoàn xong phiếu cũ, trừ khi lãnh đạo mở ngoại lệ.</span>
+          <input id="f-overdue" type="text" placeholder="Nhắc / Cấm xin tiếp" />
+
+          <label for="f-limit">Từ số tiền nào lãnh đạo phải duyệt (VNĐ)</label>
+          <span class="hint">Hiện nay mọi phiếu đều qua lãnh đạo. Ghi “mọi phiếu” nếu giữ nguyên, hoặc ghi mức tiền.</span>
+          <input id="f-limit" type="text" placeholder="Mọi phiếu, hoặc VD: trên 5.000.000" />
+
+          <label for="f-acc">Phần mềm kế toán đang dùng</label>
+          <span class="hint">ICMS xuất Excel để đối chiếu với phần mềm này. Hạch toán chi phí và thuế vẫn làm ở đây.</span>
+          <input id="f-acc" type="text" placeholder="VD: MISA / Fast" />
+
+          <label for="f-retention">Giữ file chứng từ bao lâu</label>
+          <span class="hint">Hóa đơn, biên lai đính trên phiếu. Thường 5–7 năm.</span>
+          <input id="f-retention" type="text" placeholder="VD: 7 năm" />
+
+          <label for="f-biz-owner">Người nghiệp vụ phụ trách</label>
+          <span class="hint">Kế toán trưởng hoặc lãnh đạo theo dõi lần mở này, nhận câu hỏi từ nhân viên.</span>
+          <input id="f-biz-owner" type="text" placeholder="Họ tên" />
+        </div>
+
+        <div class="fill-group">
+          <h3><span class="who who-it">IT</span> Điền nhóm này</h3>
+
+          <label for="f-domain">Địa chỉ web dùng thật</label>
+          <span class="hint">Địa chỉ nhân viên sẽ mở hàng ngày. Có ổ khóa HTTPS.</span>
+          <input id="f-domain" type="text" placeholder="VD: thanhtoan.congty.vn" />
+
+          <label for="f-split-demo">Đã tách khỏi bản thử?</label>
+          <span class="hint">Bản dùng thật dùng dữ liệu và tài khoản riêng, không còn mật khẩu mẫu.</span>
+          <input id="f-split-demo" type="text" placeholder="Đã tách / Chưa" />
+
+          <label for="f-it-owner">Người kỹ thuật phụ trách</label>
+          <span class="hint">Người sửa môi trường, tài khoản, sao lưu, địa chỉ web.</span>
+          <input id="f-it-owner" type="text" placeholder="Họ tên" />
+        </div>
+
+        <div class="fill-group">
+          <h3>Ghi chú chung</h3>
+          <label for="f-note">Việc đã chốt thêm, ngoại lệ, việc còn treo</label>
+          <span class="hint">Viết tự do. Ô này dùng chung cho nghiệp vụ và IT.</span>
+          <textarea id="f-note" rows="4" placeholder="Ví dụ: lần đầu chưa mở nhà thầu; anh A xác nhận quy chế ngày…"></textarea>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="wrap">
+      ICMS — danh sách việc để đưa vào dùng thật, không thay hướng dẫn dùng phiếu.
+      Mở file này bằng trình duyệt. Dấu đã tick được nhớ trên máy.
+    </div>
+  </footer>
+  <script>
+    const KEY = "icms-golive-checks";
+    const FILL = "icms-golive-fill";
+    const boxes = [...document.querySelectorAll(".check input[type=checkbox]")];
+    const bar = document.getElementById("bar");
+    const count = document.getElementById("count");
+
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
+        boxes.forEach((el) => {
+          el.checked = Boolean(saved[el.id]);
+          el.closest("li")?.classList.toggle("done", el.checked);
+        });
+        const fill = JSON.parse(localStorage.getItem(FILL) || "{}");
+        document.querySelectorAll(".fill input, .fill textarea").forEach((el) => {
+          if (fill[el.id] != null) el.value = fill[el.id];
+        });
+      } catch (_) {}
+      render();
+    }
+
+    function save() {
+      const saved = {};
+      boxes.forEach((el) => { saved[el.id] = el.checked; });
+      localStorage.setItem(KEY, JSON.stringify(saved));
+      const fill = {};
+      document.querySelectorAll(".fill input, .fill textarea").forEach((el) => {
+        fill[el.id] = el.value;
+      });
+      localStorage.setItem(FILL, JSON.stringify(fill));
+      render();
+    }
+
+    function render() {
+      const total = boxes.length;
+      const done = boxes.filter((el) => el.checked).length;
+      count.textContent = done + " / " + total;
+      bar.style.width = (total ? (done / total) * 100 : 0) + "%";
+    }
+
+    boxes.forEach((el) => {
+      el.addEventListener("change", () => {
+        el.closest("li")?.classList.toggle("done", el.checked);
+        save();
+      });
+    });
+    document.querySelectorAll(".fill input, .fill textarea").forEach((el) => {
+      el.addEventListener("input", save);
+    });
+    document.getElementById("print").addEventListener("click", () => window.print());
+    document.getElementById("reset").addEventListener("click", () => {
+      if (!confirm("Xóa hết dấu đã làm trên máy này?")) return;
+      localStorage.removeItem(KEY);
+      boxes.forEach((el) => {
+        el.checked = false;
+        el.closest("li")?.classList.remove("done");
+      });
+      render();
+    });
+    load();
+  </script>
+</body>
+</html>

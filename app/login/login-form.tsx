@@ -23,6 +23,14 @@ export function LoginForm() {
     null,
   );
 
+  function pickDemo(account: string) {
+    const data = new FormData();
+    data.set("username", account);
+    data.set("password", "demo123");
+    setUsername(account);
+    formAction(data);
+  }
+
   return (
     <form action={formAction} className="space-y-4">
       <label className="block">
@@ -55,13 +63,14 @@ export function LoginForm() {
         {pending ? "Đang đăng nhập..." : "Đăng nhập"}
       </button>
       <div>
-        <p className="mb-2 text-xs text-muted">Tài khoản demo, mật khẩu demo123. Bấm để điền tên đăng nhập.</p>
+        <p className="mb-2 text-xs text-muted">Tài khoản demo, mật khẩu demo123. Bấm để đăng nhập ngay.</p>
         <div className="flex flex-wrap gap-2">
           {accounts.map(([account, role]) => (
             <button
               key={account}
               type="button"
-              onClick={() => setUsername(account)}
+              disabled={pending}
+              onClick={() => pickDemo(account)}
               className={
                 username === account
                   ? "rounded-full bg-forest px-3 py-1 text-xs text-white"

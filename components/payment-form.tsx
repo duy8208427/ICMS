@@ -2,6 +2,7 @@ import { Department, Vendor } from "@prisma/client";
 import { Role } from "@/lib/enums";
 import { savePaymentAction } from "@/app/actions/tickets";
 import { FilePicker } from "@/components/file-picker";
+import { MoneyInput } from "@/components/money-input";
 import { btnGhost, btnPrimary, cardClass, fieldClass, labelClass } from "@/components/ui";
 
 type Defaults = {
@@ -46,7 +47,7 @@ export function PaymentForm({
         </label>
         <label className="block text-sm">
           <span className={labelClass}>Giá trị hợp đồng (đ)</span>
-          <input name="contractValue" type="number" min={1} required defaultValue={ticket?.contractValue ?? undefined} className={fieldClass} />
+          <MoneyInput name="contractValue" required defaultValue={ticket?.contractValue} className={fieldClass} />
         </label>
         <label className="block text-sm">
           <span className={labelClass}>Đợt thanh toán</span>
@@ -54,7 +55,7 @@ export function PaymentForm({
         </label>
         <label className="block text-sm">
           <span className={labelClass}>Số tiền đề nghị (đ)</span>
-          <input name="amount" type="number" min={1} required defaultValue={ticket?.amount} className={fieldClass} />
+          <MoneyInput name="amount" required defaultValue={ticket?.amount} className={fieldClass} />
         </label>
       </div>
       <label className="block text-sm">

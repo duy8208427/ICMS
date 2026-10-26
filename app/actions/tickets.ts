@@ -6,11 +6,14 @@ import { Role, TicketKind, TicketStatus } from "@/lib/enums";
 import { prisma } from "@/lib/prisma";
 import { saveUpload } from "@/lib/uploads";
 import {
+  INTERNAL_ROLES,
   canAct,
   canSeeTicket,
   committedPaymentStatuses,
+  formatVnd,
   nextTicketCode,
   parseDay,
+  parseMoney,
   requireDbUser,
   settlementDiff,
   sumAmounts,
@@ -50,19 +53,49 @@ async function log(ticketId: string, userId: string, action: string, message: st
   });
 }
 
-function readLines(formData: FormData) {
+type SettlementLine = {
+  content: string;
+  spentOn: Date | null;
+  amount: number;
+  fileName: string | null;
+  filePath: string | null;
+  file: File | null;
+  hasFile: boolean;
+};
+
+function keptUploadPath(value: string) {
+  const path = value.trim();
+  if (!path) return null;
+  if (path.startsWith("/uploads/") || path.startsWith("https://")) return path;
+  return null;
+}
+
+function readSettlementLines(formData: FormData): SettlementLine[] {
   const contents = formData.getAll("lineContent").map(String);
   const dates = formData.getAll("lineDate").map(String);
   const amounts = formData.getAll("lineAmount").map(String);
-  const notes = formData.getAll("lineInvoice").map(String);
-  return contents
-    .map((content, index) => ({
+  const names = formData.getAll("lineFileName").map(String);
+  const paths = formData.getAll("lineFilePath").map(String);
+  const files = formData.getAll("lineFile");
+  return contents.map((content, index) => {
+    const uploaded = files[index];
+    const file = uploaded instanceof File && uploaded.size > 0 ? uploaded : null;
+    const filePath = file ? null : keptUploadPath(paths[index] ?? "");
+    const fileName = file ? file.name : names[index]?.trim() || null;
+    return {
       content: content.trim(),
       spentOn: parseDay(dates[index] ?? ""),
-      amount: Number(amounts[index] ?? 0),
-      invoiceNote: notes[index]?.trim() || null,
-    }))
-    .filter((line) => line.content && line.amount > 0);
+      amount: parseMoney(amounts[index] ?? ""),
+      file,
+      fileName: filePath || file ? fileName : null,
+      filePath,
+      hasFile: Boolean(file || filePath),
+    };
+  });
+}
+
+function lineStarted(line: SettlementLine) {
+  return Boolean(line.content || line.amount > 0 || line.hasFile || line.spentOn);
 }
 
 async function loadVisible(id: string) {
@@ -77,13 +110,13 @@ async function loadVisible(id: string) {
 
 export async function saveAdvanceAction(formData: FormData) {
   const user = await requireDbUser();
-  if (!canAct(user.role, [Role.USER])) fail("/requests/new", "Chỉ nhân viên tạo tạm ứng");
+  if (!canAct(user.role, INTERNAL_ROLES)) fail("/requests/new", "Chỉ nhân sự nội bộ tạo tạm ứng");
 
   const id = String(formData.get("id") || "");
   const purpose = String(formData.get("purpose") || "");
   const title = String(formData.get("title") || "").trim();
   const content = String(formData.get("content") || "").trim();
-  const amount = Number(formData.get("amount"));
+  const amount = parseMoney(formData.get("amount"));
   const neededOn = parseDay(String(formData.get("neededOn") || ""));
   const settleDueOn = parseDay(String(formData.get("settleDueOn") || ""));
   const receiveMethod = String(formData.get("receiveMethod") || "");
@@ -99,7 +132,9 @@ export async function saveAdvanceAction(formData: FormData) {
   }
 
   const departmentId =
-    user.role === Role.ADMIN ? String(formData.get("departmentId") || "") : user.departmentId;
+    user.role === Role.ADMIN
+      ? String(formData.get("departmentId") || "")
+      : user.departmentId || String(formData.get("departmentId") || "");
   if (!departmentId) fail(back, "Tài khoản chưa gắn bộ phận");
 
   const status = intent === "draft" ? TicketStatus.draft : TicketStatus.cho_truong_bp;
@@ -150,43 +185,52 @@ export async function saveAdvanceAction(formData: FormData) {
 
 export async function saveSettlementAction(formData: FormData) {
   const user = await requireDbUser();
-  if (!canAct(user.role, [Role.USER])) fail("/requests/new?kind=hoan_ung", "Chỉ nhân viên tạo hoàn ứng");
+  if (!canAct(user.role, INTERNAL_ROLES)) fail("/requests/new?kind=hoan_ung", "Chỉ nhân sự nội bộ tạo hoàn ứng");
 
   const id = String(formData.get("id") || "");
   const advanceId = String(formData.get("advanceId") || "");
-  const title = String(formData.get("title") || "").trim();
+  const titleRaw = String(formData.get("title") || "").trim();
   const content = String(formData.get("content") || "").trim();
-  const intent = String(formData.get("intent") || "submit");
-  const lines = readLines(formData);
+  const isDraft = String(formData.get("intent") || "submit") === "draft";
   const back = id ? `/requests/${id}` : "/requests/new?kind=hoan_ung";
+  const started = readSettlementLines(formData).filter(lineStarted);
 
-  if (!advanceId || !title || lines.length === 0) {
-    fail(back, "Chọn phiếu tạm ứng đã chi và kê ít nhất một khoản chi");
+  if (!isDraft) {
+    if (!advanceId || !titleRaw) fail(back, "Chọn phiếu tạm ứng đã chi và nhập tiêu đề");
+    if (started.length === 0) fail(back, "Kê ít nhất một khoản chi");
+    if (started.some((line) => !line.content || line.amount <= 0 || !line.hasFile)) {
+      fail(back, "Mỗi khoản chi cần nội dung, số tiền và chứng từ");
+    }
   }
 
-  const advance = await prisma.ticket.findUnique({
-    where: { id: advanceId },
-    include: { settlements: true },
-  });
-  if (!advance || advance.kind !== TicketKind.tam_ung || advance.status !== TicketStatus.da_chi) {
-    fail(back, "Chỉ hoàn ứng trên phiếu tạm ứng đã chi");
+  let advance: { id: string; code: string; departmentId: string | null } | null = null;
+  if (advanceId) {
+    const found = await prisma.ticket.findUnique({
+      where: { id: advanceId },
+      include: { settlements: true },
+    });
+    if (!found || found.kind !== TicketKind.tam_ung || found.status !== TicketStatus.da_chi) {
+      fail(back, "Chỉ hoàn ứng trên phiếu tạm ứng đã chi");
+    }
+    if (found.createdById !== user.id && user.role !== Role.ADMIN) {
+      fail(back, "Chỉ hoàn ứng phiếu tạm ứng của mình");
+    }
+    const blocking = found.settlements.find((item) => item.id !== id && item.status !== TicketStatus.tu_choi);
+    if (blocking) fail(back, "Phiếu tạm ứng này đã có hoàn ứng đang xử lý");
+    advance = found;
+  } else if (!isDraft) {
+    fail(back, "Chọn phiếu tạm ứng đã chi và nhập tiêu đề");
   }
-  if (advance.createdById !== user.id && user.role !== Role.ADMIN) {
-    fail(back, "Chỉ hoàn ứng phiếu tạm ứng của mình");
-  }
-  const blocking = advance.settlements.find(
-    (item) => item.id !== id && item.status !== TicketStatus.tu_choi,
-  );
-  if (blocking) fail(back, "Phiếu tạm ứng này đã có hoàn ứng đang xử lý");
 
-  const amount = sumAmounts(lines);
-  const status = intent === "draft" ? TicketStatus.draft : TicketStatus.cho_truong_bp;
+  const title = titleRaw || "Hoàn ứng nháp";
+  const amount = sumAmounts(started);
+  const status = isDraft ? TicketStatus.draft : TicketStatus.cho_truong_bp;
   const data = {
     title,
     content: content || title,
     amount,
-    advanceId,
-    departmentId: advance.departmentId,
+    advanceId: advance?.id ?? null,
+    departmentId: advance?.departmentId ?? user.departmentId,
     status,
   };
 
@@ -199,7 +243,6 @@ export async function saveSettlementAction(formData: FormData) {
       fail(back, "Phiếu không còn ở trạng thái sửa");
     }
     await prisma.ticket.update({ where: { id }, data });
-    await prisma.expenseLine.deleteMany({ where: { ticketId: id } });
   } else {
     const created = await prisma.ticket.create({
       data: {
@@ -212,17 +255,41 @@ export async function saveSettlementAction(formData: FormData) {
     ticketId = created.id;
   }
 
-  await prisma.expenseLine.createMany({
-    data: lines.map((line) => ({ ...line, ticketId })),
-  });
-  await saveFiles(formData, ticketId, user.id, "hoan_ung");
+  const stored: {
+    ticketId: string;
+    content: string;
+    spentOn: Date | null;
+    amount: number;
+    fileName: string | null;
+    filePath: string | null;
+  }[] = [];
+  for (const line of started) {
+    let filePath = line.filePath;
+    let fileName = line.fileName;
+    if (line.file) {
+      filePath = await saveUpload(line.file, ticketId);
+      fileName = line.file.name;
+      if (!filePath) fail(back, "Không lưu được chứng từ");
+    }
+    stored.push({
+      ticketId,
+      content: line.content,
+      spentOn: line.spentOn,
+      amount: line.amount,
+      fileName,
+      filePath,
+    });
+  }
+  if (!isDraft && stored.some((line) => !line.filePath)) fail(back, "Mỗi khoản chi cần chứng từ");
+
+  await prisma.expenseLine.deleteMany({ where: { ticketId } });
+  if (stored.length > 0) await prisma.expenseLine.createMany({ data: stored });
+
   await log(
     ticketId,
     user.id,
-    intent === "draft" ? "draft" : "submit",
-    intent === "draft"
-      ? "Lưu nháp đề nghị hoàn ứng"
-      : `Gửi hoàn ứng ${amount.toLocaleString("vi-VN")} đ cho phiếu ${advance.code}`,
+    isDraft ? "draft" : "submit",
+    isDraft ? "Lưu nháp đề nghị hoàn ứng" : `Gửi hoàn ứng ${formatVnd(amount)} cho phiếu ${advance?.code ?? ""}`,
   );
   refresh();
   redirect(`/requests/${ticketId}`);
@@ -236,9 +303,9 @@ export async function savePaymentAction(formData: FormData) {
   const title = String(formData.get("title") || "").trim();
   const content = String(formData.get("content") || "").trim();
   const contractNumber = String(formData.get("contractNumber") || "").trim();
-  const contractValue = Number(formData.get("contractValue"));
+  const contractValue = parseMoney(formData.get("contractValue"));
   const installment = Number(formData.get("installment"));
-  const amount = Number(formData.get("amount"));
+  const amount = parseMoney(formData.get("amount"));
   const departmentId = String(formData.get("departmentId") || "");
   const vendorId = user.role === Role.ADMIN ? String(formData.get("vendorId") || "") : user.vendorId;
   const intent = String(formData.get("intent") || "submit");
@@ -366,6 +433,8 @@ export async function decideAction(formData: FormData) {
   } else {
     fail(back, "Phiếu không đang chờ duyệt");
   }
+
+  if (ticket.createdById === user.id) fail(back, "Không tự duyệt phiếu của mình");
 
   if (decision === "reject") {
     await prisma.ticket.update({ where: { id }, data: { status: TicketStatus.tu_choi } });

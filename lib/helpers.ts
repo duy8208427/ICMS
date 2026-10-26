@@ -21,6 +21,8 @@ export function canAct(role: string, roles: readonly string[]) {
   return role === Role.ADMIN || roles.includes(role);
 }
 
+export const INTERNAL_ROLES = [Role.USER, Role.TRUONG_BO_PHAN, Role.KE_TOAN, Role.LANH_DAO] as const;
+
 export const ROLE_LABEL: Record<string, string> = {
   USER: "Nhân viên",
   TRUONG_BO_PHAN: "Trưởng bộ phận",
@@ -98,12 +100,21 @@ const CODE_PREFIX: Record<string, string> = {
 };
 
 export function formatVnd(value?: number | null) {
-  if (value == null) return "—";
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(value);
+  if (value == null || Number.isNaN(Number(value))) return "—";
+  const rounded = Math.round(Number(value));
+  const sign = rounded < 0 ? "-" : "";
+  const body = Math.abs(rounded)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${sign}${body} đ`;
+}
+
+export function parseMoney(value?: FormDataEntryValue | string | number | null) {
+  const digits = String(value ?? "")
+    .replace(/\D/g, "")
+    .replace(/^0+(?=\d)/, "");
+  if (!digits) return 0;
+  return Number(digits);
 }
 
 export function formatDate(value?: Date | string | null) {

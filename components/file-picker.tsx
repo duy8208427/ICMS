@@ -5,12 +5,13 @@ import { useId, useState } from "react";
 type Props = {
   name: string;
   multiple?: boolean;
+  existingName?: string | null;
   onChange?: (fileName: string | null) => void;
 };
 
-export function FilePicker({ name, multiple, onChange }: Props) {
+export function FilePicker({ name, multiple, existingName, onChange }: Props) {
   const id = useId();
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(existingName || null);
 
   return (
     <div className="mt-1">
